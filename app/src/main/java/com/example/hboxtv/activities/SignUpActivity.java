@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,6 +15,8 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.hboxtv.R;
@@ -28,6 +31,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +50,7 @@ public class SignUpActivity extends AppCompatActivity {
     private String email;
     private String password;
     private String confirmPassword;
+    private ProgressBar progressBar;
 
     private ApiInterface apiInterface;
 
@@ -60,12 +65,15 @@ public class SignUpActivity extends AppCompatActivity {
         findViewById(R.id.button_sign_up).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (confirmInput()){
+                // add animation
+                v.startAnimation(AnimationUtils.loadAnimation(SignUpActivity.this, R.anim.button_click));
+
+                if (confirmInput()) {
                     email = textInputEmail.getEditText().getText().toString();
                     password = textInputPassword.getEditText().getText().toString();
 
-                    Log.d(TAG, "onClick: email: "+ email);
-                    Log.d(TAG, "onClick: password: "+ password);
+                    Log.d(TAG, "onClick: email: " + email);
+                    Log.d(TAG, "onClick: password: " + password);
 
                     registerNewUser(email, password, UID, ipAddress);
                 }
@@ -74,9 +82,10 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void registerNewUser(String email, String password, String uid, String ipAddress) {
+        progressBar.setVisibility(View.VISIBLE);
         apiInterface = ApiClient.getInstance().getMyApi();
         SignUpModel model = new SignUpModel(email, password, uid, ipAddress);
-        Log.d(TAG, "registerNewUser: model: "+ model);
+        Log.d(TAG, "registerNewUser: model: " + model);
         Call<ApiResponse> call = apiInterface.registerUser(model);
         call.enqueue(new Callback<ApiResponse>() {
             @Override
@@ -86,9 +95,9 @@ public class SignUpActivity extends AppCompatActivity {
                         /*ApiResponse signUpResponse = new ApiResponse();
                         signUpResponse.setCode(response.body().getCode());
                         signUpResponse.setMessage(response.body().getMessage());*/
-                        Log.d(TAG, "onResponse: code: " + response.code());
-                        Log.d(TAG, "onResponse: message: " + response.message());
-
+                        Log.d(TAG, "onResponse: code: " + response.body().getCode());
+                        Log.d(TAG, "onResponse: message: " + response.body().getMessage());
+                        progressBar.setVisibility(View.GONE);
                         showSignUpDialog(response.body().getMessage());
                     }
                 }
@@ -96,6 +105,7 @@ public class SignUpActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
                 Log.d(TAG, "onFailure: " + t.getMessage());
                 Toast.makeText(SignUpActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -105,6 +115,7 @@ public class SignUpActivity extends AppCompatActivity {
     private void showSignUpDialog(String message) {
         new AlertDialog.Builder(SignUpActivity.this).setTitle("Registration Successful")
                 .setMessage(message)
+                .setCancelable(false)
                 /*.setNegativeButton(getResources().getString(R.string.cancelString), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -116,7 +127,7 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intent = new Intent(SignUpActivity.this, SignInActivity.class);
-                        startActivity(intent);
+                        startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(SignUpActivity.this).toBundle());
                         finish();
                         dialog.dismiss();
                     }
@@ -194,6 +205,7 @@ public class SignUpActivity extends AppCompatActivity {
         textInputEmail = findViewById(R.id.text_input_layout_email);
         textInputPassword = findViewById(R.id.text_input_layout_password);
         textInputConfirmPassword = findViewById(R.id.textInputLayout3);
+        progressBar = findViewById(R.id.progress_bar);
     }
 
     private void checkPhoneStatePermission() {
@@ -208,9 +220,11 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void getUid() {
         try {
-            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            /*TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager != null)
-                UID = telephonyManager.getDeviceId();
+                UID = telephonyManager.getDeviceId();*/
+//            UID = UUID.randomUUID().toString();
+            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
             Log.d(TAG, "getUid: " + UID);
         } catch (Exception e) {
             e.getStackTrace();

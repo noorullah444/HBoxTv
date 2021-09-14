@@ -1,7 +1,13 @@
 package com.example.hboxtv.activities;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.app.ActivityOptions;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -9,6 +15,8 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +46,7 @@ public class SignInActivity extends AppCompatActivity {
     private String email;
     private String password;
     private String UID;
+    private ProgressBar progressBar;
 
     private ApiInterface apiInterface;
 
@@ -54,6 +63,9 @@ public class SignInActivity extends AppCompatActivity {
         findViewById(R.id.button_sign_in).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // add animation
+                view.startAnimation(AnimationUtils.loadAnimation(SignInActivity.this, R.anim.button_click));
+
                 if (confirmInput()){
                     email = textInputEmail.getEditText().getText().toString();
                     password = textInputPassword.getEditText().getText().toString();
@@ -69,8 +81,12 @@ public class SignInActivity extends AppCompatActivity {
         findViewById(R.id.tv_sign_up).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SignInActivity.this, SignUpActivity.class));
-                finish();
+                // add animation
+                v.startAnimation(AnimationUtils.loadAnimation(SignInActivity.this, R.anim.button_click));
+
+                Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
+                startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(SignInActivity.this).toBundle());
+//                finish();
             }
         });
     }
@@ -127,6 +143,7 @@ public class SignInActivity extends AppCompatActivity {
         Log.d(TAG, "loginUser: password: " + password);
         Log.d(TAG, "loginUser: uid: " + uid);
         Log.d(TAG, "loginUser: deviceName: " + deviceName);
+        progressBar.setVisibility(View.VISIBLE);
         apiInterface = ApiClient.getInstance().getMyApi();
         SignInModel model = new SignInModel(email, password, uid, deviceName);
         Log.d(TAG, "registerNewUser: model: "+ model);
@@ -136,13 +153,15 @@ public class SignInActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        Log.d(TAG, "onResponse: code: " + response.code());
-                        Log.d(TAG, "onResponse: message: " + response.message());
-
-                        Intent intent = new Intent(SignInActivity.this, HomeActivity.class);
-                        startActivity(intent);
-                        finish();
+                        Log.d(TAG, "onResponse: code: " + response.body().getCode());
+                        Log.d(TAG, "onResponse: message: " + response.body().getMessage());
+                        progressBar.setVisibility(View.GONE);
+                        showSignInDialog(response.body().getMessage());
                     }
+                } else {
+                    Log.d(TAG, "onResponse: response failed!");
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(SignInActivity.this, "Make sure email and password are correct.", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -154,9 +173,33 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
+    private void showSignInDialog(String message) {
+        new AlertDialog.Builder(SignInActivity.this).setTitle("Login Successful")
+                .setMessage(message)
+                .setCancelable(false)
+                /*.setNegativeButton(getResources().getString(R.string.cancelString), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+
+                    }
+                })*/
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(SignInActivity.this, HomeActivity.class);
+                        startActivity(intent);
+                        finish();
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
     private void initViews() {
         textInputEmail = findViewById(R.id.text_input_layout_email);
         textInputPassword = findViewById(R.id.text_input_layout_password);
+        progressBar = findViewById(R.id.progress_bar);
     }
 
     private String getDeviceName() {
@@ -165,9 +208,11 @@ public class SignInActivity extends AppCompatActivity {
 
     private void getUid() {
         try {
-            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            /*TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager != null)
-                UID = telephonyManager.getDeviceId();
+                UID = telephonyManager.getDeviceId();*/
+//            UID = UUID.randomUUID().toString();
+            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
             Log.d(TAG, "getUid: " + UID);
         } catch (Exception e) {
             e.getStackTrace();

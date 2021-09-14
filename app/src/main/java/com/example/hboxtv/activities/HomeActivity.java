@@ -1,6 +1,10 @@
 package com.example.hboxtv.activities;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,8 +19,64 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        // to make status bar transparent
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+        }
+
+        setClickListeners();
 
 //        getHeroes();
+    }
+
+    private void setClickListeners() {
+        findViewById(R.id.btn_logout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "Logout Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "Settings Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.card_live_tv).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "Live TV Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.card_tv_shows).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "TV Shows Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.card_video_club).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "Video Club Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.card_replay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                Toast.makeText(HomeActivity.this, "Replay Clicked!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /*private void getHeroes() {

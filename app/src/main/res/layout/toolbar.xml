@@ -5,15 +5,16 @@
     <androidx.appcompat.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="65dp"
-        android:background="#000000"
+        android:background="@color/purple_500"
         android:theme="@style/Theme.AppCompat.Light.Dialog"
         app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-            <ImageView
+            <!--<ImageView
                 android:id="@+id/back_arrowtopic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -21,24 +22,21 @@
                 android:src="@drawable/back_arrow"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent"/>-->
 
             <TextView
                 android:id="@+id/imageView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:padding="5dp"
                 android:text="@string/app_name"
-                android:textColor="@android:color/holo_red_dark"
+                android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:gravity="center"
-                app:layout_constraintBottom_toBottomOf="@+id/back_arrowtopic"
-                app:layout_constraintStart_toEndOf="@+id/back_arrowtopic"
-                app:layout_constraintTop_toTopOf="@+id/back_arrowtopic" />
+                android:fontFamily="@font/poppins_bold"
+                android:gravity="center" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
 
     </androidx.appcompat.widget.Toolbar>
 

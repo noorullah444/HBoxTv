@@ -16,6 +16,7 @@
         android:textColor="@android:color/holo_red_dark"
         android:textSize="45sp"
         android:textStyle="bold"
+        android:fontFamily="@font/poppins_bold"
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
