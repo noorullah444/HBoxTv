@@ -1,7 +1,12 @@
 package com.example.hboxtv.activities;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
@@ -9,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hboxtv.R;
+import com.example.hboxtv.SplashActivity;
 import com.example.hboxtv.api.ApiInterface;
 
 public class HomeActivity extends AppCompatActivity {
@@ -23,7 +29,6 @@ public class HomeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
         }
-
         setClickListeners();
 
 //        getHeroes();
@@ -34,7 +39,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "Logout Clicked!", Toast.LENGTH_SHORT).show();
+                logOutUser();
             }
         });
 
@@ -77,6 +82,41 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(HomeActivity.this, "Replay Clicked!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void logOutUser() {
+        // get value from shared prefs
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HomeActivity.this);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        boolean isLogin = preferences.getBoolean("isLogin", false);
+        if (isLogin) {
+            editor.putBoolean("isLogin", false);
+            editor.apply();
+            showLogOutDialog();
+        }
+    }
+
+    private void showLogOutDialog() {
+        new AlertDialog.Builder(HomeActivity.this).setTitle("Logout")
+                .setMessage("Are you sure to logout?")
+                .setCancelable(true)
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+
+                    }
+                })
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(HomeActivity.this, SignInActivity.class));
+                        finish();
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 
     /*private void getHeroes() {

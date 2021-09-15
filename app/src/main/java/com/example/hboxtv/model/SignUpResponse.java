@@ -4,7 +4,7 @@ package com.example.hboxtv.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ApiResponse {
+public class SignUpResponse {
 
     @SerializedName("code")
     @Expose

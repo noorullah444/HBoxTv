@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">HBoxTv</string>
     <string name="mail_input">Email Address</string>
-    <string name="_input">Password</string>
+    <string name="password_input">Password</string>
     <string name="forgot_password_text">Forgot Password?</string>
     <string name="tv_sign_up_text">New to HBoxTv? Sign up now.</string>
     <string name="tv_sign_in_text">Sign In</string>

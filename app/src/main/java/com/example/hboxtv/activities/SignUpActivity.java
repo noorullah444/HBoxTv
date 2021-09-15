@@ -7,15 +7,14 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,15 +22,13 @@ import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
 import com.example.hboxtv.model.SignUpModel;
-import com.example.hboxtv.model.ApiResponse;
-import com.google.android.material.textfield.TextInputLayout;
+import com.example.hboxtv.model.SignUpResponse;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,9 +41,9 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String TAG = SignUpActivity.class.getSimpleName();
     private String UID;
     private String ipAddress;
-    private TextInputLayout textInputEmail;
-    private TextInputLayout textInputPassword;
-    private TextInputLayout textInputConfirmPassword;
+    private EditText textInputEmail;
+    private EditText textInputPassword;
+    private EditText textInputConfirmPassword;
     private String email;
     private String password;
     private String confirmPassword;
@@ -69,8 +66,8 @@ public class SignUpActivity extends AppCompatActivity {
                 v.startAnimation(AnimationUtils.loadAnimation(SignUpActivity.this, R.anim.button_click));
 
                 if (confirmInput()) {
-                    email = textInputEmail.getEditText().getText().toString();
-                    password = textInputPassword.getEditText().getText().toString();
+                    email = textInputEmail.getText().toString();
+                    password = textInputPassword.getText().toString();
 
                     Log.d(TAG, "onClick: email: " + email);
                     Log.d(TAG, "onClick: password: " + password);
@@ -86,13 +83,13 @@ public class SignUpActivity extends AppCompatActivity {
         apiInterface = ApiClient.getInstance().getMyApi();
         SignUpModel model = new SignUpModel(email, password, uid, ipAddress);
         Log.d(TAG, "registerNewUser: model: " + model);
-        Call<ApiResponse> call = apiInterface.registerUser(model);
-        call.enqueue(new Callback<ApiResponse>() {
+        Call<SignUpResponse> call = apiInterface.registerUser(model);
+        call.enqueue(new Callback<SignUpResponse>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<SignUpResponse> call, Response<SignUpResponse> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        /*ApiResponse signUpResponse = new ApiResponse();
+                        /*SignUpResponse signUpResponse = new SignUpResponse();
                         signUpResponse.setCode(response.body().getCode());
                         signUpResponse.setMessage(response.body().getMessage());*/
                         Log.d(TAG, "onResponse: code: " + response.body().getCode());
@@ -104,7 +101,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<SignUpResponse> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Log.d(TAG, "onFailure: " + t.getMessage());
                 Toast.makeText(SignUpActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -143,8 +140,8 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private boolean validateConfirmPassword() {
-        String confirmPasswordInput = textInputConfirmPassword.getEditText().getText().toString().trim();
-        String passwordInput = textInputPassword.getEditText().getText().toString().trim();
+        String confirmPasswordInput = textInputConfirmPassword.getText().toString().trim();
+        String passwordInput = textInputPassword.getText().toString().trim();
 
         if (confirmPasswordInput.isEmpty()) {
             textInputConfirmPassword.setError("Field can't be empty");
@@ -159,7 +156,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private boolean validatePassword() {
-        String passwordInput = textInputPassword.getEditText().getText().toString().trim();
+        String passwordInput = textInputPassword.getText().toString().trim();
 
         if (passwordInput.isEmpty()) {
             textInputPassword.setError("Field can't be empty");
@@ -171,7 +168,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private boolean validateEmail() {
-        String emailInput = textInputEmail.getEditText().getText().toString().trim();
+        String emailInput = textInputEmail.getText().toString().trim();
 
         if (emailInput.isEmpty()) {
             textInputEmail.setError("Field can't be empty");
@@ -202,9 +199,9 @@ public class SignUpActivity extends AppCompatActivity {
 //        editTextEmail = findViewById(R.id.text_input_email);
 //        editTextPassword = findViewById(R.id.text_input_password);
 //        editTextConfirmPassword = findViewById(R.id.text_input_confirm_password);
-        textInputEmail = findViewById(R.id.text_input_layout_email);
-        textInputPassword = findViewById(R.id.text_input_layout_password);
-        textInputConfirmPassword = findViewById(R.id.textInputLayout3);
+        textInputEmail = findViewById(R.id.text_input_email1);
+        textInputPassword = findViewById(R.id.text_input_password1);
+        textInputConfirmPassword = findViewById(R.id.text_input_confirm_password1);
         progressBar = findViewById(R.id.progress_bar);
     }
 

@@ -71,14 +71,12 @@
                 android:padding="5dp"
                 android:src="@drawable/ic_logout" />
         </LinearLayout>
-
-
-
     </LinearLayout>
 
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header_layout"
         app:layout_constraintEnd_toEndOf="parent">
@@ -92,7 +90,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_live_tv"
-                android:layout_width="120dp"
+                android:layout_width="160dp"
                 android:layout_height="120dp"
                 android:layout_margin="16dp"
                 app:cardCornerRadius="10dp"
@@ -108,7 +106,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_settings"/>
+                        android:src="@drawable/ic_live_tv"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -118,7 +116,7 @@
                         android:text="Live TV"
                         android:textSize="16sp"
                         android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_regular"
+                        android:fontFamily="@font/poppins_medium"
                         android:textAllCaps="false"/>
 
                 </LinearLayout>
@@ -127,7 +125,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_tv_shows"
-                android:layout_width="120dp"
+                android:layout_width="160dp"
                 android:layout_height="120dp"
                 android:layout_margin="16dp"
                 app:cardCornerRadius="10dp"
@@ -143,7 +141,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_settings"/>
+                        android:src="@drawable/ic_tv_shows"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -153,7 +151,7 @@
                         android:text="TV Shows"
                         android:textSize="16sp"
                         android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_regular"
+                        android:fontFamily="@font/poppins_medium"
                         android:textAllCaps="false"/>
 
                 </LinearLayout>
@@ -162,7 +160,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_video_club"
-                android:layout_width="120dp"
+                android:layout_width="160dp"
                 android:layout_height="120dp"
                 android:layout_margin="16dp"
                 app:cardCornerRadius="10dp"
@@ -178,7 +176,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_settings"/>
+                        android:src="@drawable/ic_play"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -188,7 +186,7 @@
                         android:text="Video Club"
                         android:textSize="16sp"
                         android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_regular"
+                        android:fontFamily="@font/poppins_medium"
                         android:textAllCaps="false"/>
 
                 </LinearLayout>
@@ -197,7 +195,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_replay"
-                android:layout_width="120dp"
+                android:layout_width="160dp"
                 android:layout_height="120dp"
                 android:layout_margin="16dp"
                 app:cardCornerRadius="10dp"
@@ -213,7 +211,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_settings"/>
+                        android:src="@drawable/ic_replay"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -223,7 +221,7 @@
                         android:text="Replay"
                         android:textSize="16sp"
                         android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_regular"
+                        android:fontFamily="@font/poppins_medium"
                         android:textAllCaps="false"/>
 
                 </LinearLayout>

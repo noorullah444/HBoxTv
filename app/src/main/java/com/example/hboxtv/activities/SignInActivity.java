@@ -1,21 +1,19 @@
 package com.example.hboxtv.activities;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -26,9 +24,8 @@ import androidx.core.content.ContextCompat;
 import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
-import com.example.hboxtv.model.ApiResponse;
 import com.example.hboxtv.model.SignInModel;
-import com.google.android.material.textfield.TextInputLayout;
+import com.example.hboxtv.model.SignInResponse;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,8 +38,8 @@ public class SignInActivity extends AppCompatActivity {
     private static final int REQUEST_READ_PHONE_STATE = 102;
     private static final String TAG = SignInActivity.class.getSimpleName();
     private String deviceName;
-    private TextInputLayout textInputEmail;
-    private TextInputLayout textInputPassword;
+    private EditText textInputEmail;
+    private EditText textInputPassword;
     private String email;
     private String password;
     private String UID;
@@ -67,8 +64,8 @@ public class SignInActivity extends AppCompatActivity {
                 view.startAnimation(AnimationUtils.loadAnimation(SignInActivity.this, R.anim.button_click));
 
                 if (confirmInput()){
-                    email = textInputEmail.getEditText().getText().toString();
-                    password = textInputPassword.getEditText().getText().toString();
+                    email = textInputEmail.getText().toString();
+                    password = textInputPassword.getText().toString();
 
                     Log.d(TAG, "onClick: email: "+ email);
                     Log.d(TAG, "onClick: password: "+ password);
@@ -99,7 +96,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private boolean validatePassword() {
-        String passwordInput = textInputPassword.getEditText().getText().toString().trim();
+        String passwordInput = textInputPassword.getText().toString().trim();
 
         if (passwordInput.isEmpty()) {
             textInputPassword.setError("Field can't be empty");
@@ -111,7 +108,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private boolean validateEmail() {
-        String emailInput = textInputEmail.getEditText().getText().toString().trim();
+        String emailInput = textInputEmail.getText().toString().trim();
 
         if (emailInput.isEmpty()) {
             textInputEmail.setError("Field can't be empty");
@@ -147,14 +144,26 @@ public class SignInActivity extends AppCompatActivity {
         apiInterface = ApiClient.getInstance().getMyApi();
         SignInModel model = new SignInModel(email, password, uid, deviceName);
         Log.d(TAG, "registerNewUser: model: "+ model);
-        Call<ApiResponse> call = apiInterface.loginUser(model);
-        call.enqueue(new Callback<ApiResponse>() {
+        Call<SignInResponse> call = apiInterface.loginUser(model);
+        call.enqueue(new Callback<SignInResponse>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<SignInResponse> call, Response<SignInResponse> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
+                        String GUID = response.body().getGuid();
+
+                        // saving guid to shared prefs
+                        if (!GUID.isEmpty()) {
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SignInActivity.this);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("guid", GUID);
+                            editor.putBoolean("isLogin", true);
+                            editor.apply();
+                        }
+
                         Log.d(TAG, "onResponse: code: " + response.body().getCode());
                         Log.d(TAG, "onResponse: message: " + response.body().getMessage());
+                        Log.d(TAG, "onResponse: guid: "+ GUID);
                         progressBar.setVisibility(View.GONE);
                         showSignInDialog(response.body().getMessage());
                     }
@@ -166,7 +175,7 @@ public class SignInActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<SignInResponse> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
                 Toast.makeText(SignInActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -197,8 +206,8 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        textInputEmail = findViewById(R.id.text_input_layout_email);
-        textInputPassword = findViewById(R.id.text_input_layout_password);
+        textInputEmail = findViewById(R.id.text_input_email1);
+        textInputPassword = findViewById(R.id.text_input_password1);
         progressBar = findViewById(R.id.progress_bar);
     }
 
