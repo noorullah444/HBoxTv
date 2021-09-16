@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/item_bg"
+    android:gravity="center_vertical"
+    android:padding="16dp"
+    android:layout_margin="8dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="1dp"
+        android:src="@drawable/ic_tv"/>
+
+    <TextView
+        android:id="@+id/tv_category_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="Cat Name"
+        android:textSize="14sp"
+        android:textAllCaps="true"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/poppins_regular"
+        android:textColor="@color/white"/>
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/tv_category_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="124"
+        android:textSize="14sp"
+        android:textAllCaps="true"
+        android:fontFamily="@font/poppins_regular"
+        android:textColor="@color/white"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="1dp"
+        android:src="@drawable/ic_arrow_forward"/>
+
+</LinearLayout>

@@ -4,10 +4,6 @@
     package="com.example.hboxtv">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission
-        android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
-        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -17,14 +13,23 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HBoxTv"
         android:usesCleartextTraffic="true">
+        <activity android:name=".activities.ReplayActivity"
+            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".activities.TvShowsActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".activities.VideoClubActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".activities.LiveTvActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".activities.SignUpActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.HomeActivity"
-            android:screenOrientation="landscape">
-
-        </activity>
+            android:screenOrientation="landscape" />
         <activity
             android:name=".activities.SignInActivity"
             android:screenOrientation="portrait" />

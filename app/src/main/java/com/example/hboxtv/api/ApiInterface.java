@@ -1,9 +1,14 @@
 package com.example.hboxtv.api;
 
+import com.example.hboxtv.model.CategoryByDeviceModel;
+import com.example.hboxtv.model.Category;
+import com.example.hboxtv.model.CategoryByDeviceResponse;
 import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
 import com.example.hboxtv.model.SignUpModel;
 import com.example.hboxtv.model.SignUpResponse;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -21,6 +26,6 @@ public interface ApiInterface {
     @POST("login.php")
     Call<SignInResponse> loginUser(@Body SignInModel body);
 
-    /*@GET("movie/{id}")
-    Call<Hero> getMovieDetails(@Path("id") int id, @Query("api_key") String apiKey);*/
+    @POST("categorybydevice.php")
+    Call<CategoryByDeviceResponse> getCategories(@Body CategoryByDeviceModel model);
 }

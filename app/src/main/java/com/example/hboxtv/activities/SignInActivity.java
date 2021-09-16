@@ -26,6 +26,7 @@ import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
 import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
+import com.google.gson.Gson;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +53,8 @@ public class SignInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 //        getSignUpResponse();
-        checkPhoneStatePermission();
+//        checkPhoneStatePermission();
+        getUid();
         deviceName = getDeviceName();
         Log.d(TAG, "onCreate: deviceName: "+ deviceName);
         initViews();
@@ -143,6 +145,7 @@ public class SignInActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         apiInterface = ApiClient.getInstance().getMyApi();
         SignInModel model = new SignInModel(email, password, uid, deviceName);
+
         Log.d(TAG, "registerNewUser: model: "+ model);
         Call<SignInResponse> call = apiInterface.loginUser(model);
         call.enqueue(new Callback<SignInResponse>() {
@@ -151,18 +154,21 @@ public class SignInActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
                         String GUID = response.body().getGuid();
+                        String UID = response.body().getUid();
 
                         // saving guid to shared prefs
-                        if (!GUID.isEmpty()) {
+//                        if (!GUID.isEmpty()) {
                             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SignInActivity.this);
                             SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("uid", UID);
                             editor.putString("guid", GUID);
                             editor.putBoolean("isLogin", true);
                             editor.apply();
-                        }
+//                        }
 
                         Log.d(TAG, "onResponse: code: " + response.body().getCode());
                         Log.d(TAG, "onResponse: message: " + response.body().getMessage());
+                        Log.d(TAG, "onResponse: uid: "+ UID);
                         Log.d(TAG, "onResponse: guid: "+ GUID);
                         progressBar.setVisibility(View.GONE);
                         showSignInDialog(response.body().getMessage());
@@ -176,7 +182,7 @@ public class SignInActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<SignInResponse> call, Throwable t) {
-                Log.d(TAG, "onFailure: " + t.getMessage());
+                Log.d(TAG, "onFailure: " + t.getCause());
                 Toast.makeText(SignInActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -228,7 +234,7 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    private void checkPhoneStatePermission() {
+    /*private void checkPhoneStatePermission() {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
 
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -250,7 +256,7 @@ public class SignInActivity extends AppCompatActivity {
                 Log.d(TAG, "onRequestPermissionsResult: permission denied!");
             }
         }
-    }
+    }*/
 
     /*private void getSignUpResponse() {
         Intent intent = getIntent();

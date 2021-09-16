@@ -6,8 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
@@ -15,11 +19,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hboxtv.R;
 import com.example.hboxtv.SplashActivity;
+import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
+import com.example.hboxtv.model.Category;
+import com.example.hboxtv.model.CategoryByDeviceModel;
+import com.example.hboxtv.model.CategoryByDeviceResponse;
+import com.google.gson.Gson;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = HomeActivity.class.getSimpleName();
-    ApiInterface apiInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,11 +43,13 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         // to make status bar transparent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+//            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+            // for full screen activity
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        setClickListeners();
 
-//        getHeroes();
+        setClickListeners();
     }
 
     private void setClickListeners() {
@@ -55,15 +73,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "Live TV Clicked!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        findViewById(R.id.card_tv_shows).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "TV Shows Clicked!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(HomeActivity.this, LiveTvActivity.class));
             }
         });
 
@@ -71,7 +81,15 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "Video Club Clicked!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(HomeActivity.this, VideoClubActivity.class));
+            }
+        });
+
+        findViewById(R.id.card_tv_shows).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+                startActivity(new Intent(HomeActivity.this, TvShowsActivity.class));
             }
         });
 
@@ -79,7 +97,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "Replay Clicked!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(HomeActivity.this, ReplayActivity.class));
             }
         });
     }
@@ -118,39 +136,4 @@ public class HomeActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
-    /*private void getHeroes() {
-        //Creating a call instance using our RetrofitClient
-        //here basically we are calling the method getHeroes() that we created inside
-        //our API Interface
-        apiInterface = ApiClient.getInstance().getMyApi();
-        Call<List<Hero>> call = apiInterface.getHeroes();
-
-        //to perform the API call we need to call the method enqueue()
-        //We need to pass a Callback with enqueue method
-        //And Inside the callback functions we will handle success or failure of
-        //the result that we got after the API call
-        call.enqueue(new Callback<List<Hero>>() {
-            @Override
-            public void onResponse(Call<List<Hero>> call, Response<List<Hero>> response) {
-
-                //In this point we got our hero list
-                //thats damn easy right ;)
-                if (response.body() != null) {
-                    List<Hero> heroList = response.body();
-                    Log.d(TAG, "onResponse: response= " + heroList.toString());
-                }
-
-                //now we can do whatever we want with this list
-
-
-            }
-
-            @Override
-            public void onFailure(Call<List<Hero>> call, Throwable t) {
-                //handle error or failure cases here
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }*/
 }
