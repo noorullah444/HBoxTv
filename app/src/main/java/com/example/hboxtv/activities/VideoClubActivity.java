@@ -16,14 +16,25 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.CategoryAdapter;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
+import com.example.hboxtv.model.Category;
 import com.example.hboxtv.model.CategoryByDeviceModel;
 import com.example.hboxtv.model.CategoryByDeviceResponse;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,8 +45,10 @@ import retrofit2.Response;
 
 public class VideoClubActivity extends AppCompatActivity {
     private static final String TAG = LiveTvActivity.class.getSimpleName();
+    private static final String JSON_URL = "http://54.36.204.161/iptvapi/objects/categorybydevice.php";
     private ApiInterface apiInterface;
     ShimmerFrameLayout container;
+    CategoryByDeviceResponse categoryByDeviceResponse = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +56,8 @@ public class VideoClubActivity extends AppCompatActivity {
         setContentView(R.layout.activity_video_club);
         container = findViewById(R.id.shimmer_view_container);
         container.startShimmer();
+        categoryByDeviceResponse = new CategoryByDeviceResponse();
+
         // to make status bar transparent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
@@ -63,12 +78,90 @@ public class VideoClubActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             if (UID != null && GUID != null) {
-                getCategories(UID, GUID);
+                if (HomeActivity.videoClubList != null && HomeActivity.videoClubList.size() != 0) {
+                    categoryByDeviceResponse.setResponse(HomeActivity.videoClubList);
+                    populateRecyclerView(categoryByDeviceResponse);
+                } else
+                    getCategoriesByVolley(UID, GUID);
             }
             handler.post(() -> {
                 //UI Thread work here
             });
         });
+    }
+
+    private void getCategoriesByVolley(String uid, String guid) {
+
+        try {
+            JSONObject jsonBody = new JSONObject();
+
+            jsonBody.put("deviceuid", uid);
+            jsonBody.put("customerguid", guid);
+            jsonBody.put("category_type", "2");
+
+            JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.d(TAG, "onResponse: " + response.toString());
+
+                    if (response != null) {
+                        try {
+                            //getting the whole json object from the response
+                            JSONArray heroArray = response.getJSONArray("response");
+
+                            //now looping through all the elements of the json array
+                            for (int i = 0; i < heroArray.length(); i++) {
+                                //getting the json object of the particular index inside the array
+                                JSONObject heroObject = heroArray.getJSONObject(i);
+
+                                Category category = new Category(heroObject.getString("category_id"), heroObject.getString("category_name"));
+
+                                //adding the list
+                                HomeActivity.videoClubList.add(category);
+                                categoryByDeviceResponse.setResponse(HomeActivity.videoClubList);
+                            }
+                            populateRecyclerView(categoryByDeviceResponse);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d(TAG, "onErrorResponse: " + error.toString());
+//                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            jsonObject.setRetryPolicy(new RetryPolicy() {
+                @Override
+                public int getCurrentTimeout() {
+                    return 50000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 50000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+
+                }
+            });
+
+            //creating a request queue
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+            //adding the string request to request queue
+            requestQueue.add(jsonObject);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setClickListeners() {
@@ -131,7 +224,12 @@ public class VideoClubActivity extends AppCompatActivity {
         recyclerView.hasFixedSize();
         CategoryAdapter adapter = new CategoryAdapter(this, categories);
         recyclerView.setAdapter(adapter);
-        container.stopShimmer();
-        container.setVisibility(View.GONE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                container.stopShimmer();
+                container.setVisibility(View.GONE);
+            }
+        });
     }
 }

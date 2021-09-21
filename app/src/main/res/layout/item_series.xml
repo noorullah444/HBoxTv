@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="140dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/item_bg"
+    android:gravity="center_vertical"
+    android:layout_margin="16dp"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/iv_series_cover"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_margin="5dp"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_launcher_background"/>
+
+    <TextView
+        android:id="@+id/tv_series_name"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iv_series_cover"
+        android:layout_margin="6dp"
+        android:gravity="center"
+        android:text="Series Name"
+        android:textSize="14sp"
+        android:textAllCaps="true"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:fontFamily="@font/poppins_regular"
+        android:textColor="@color/white"/>
+
+</RelativeLayout>

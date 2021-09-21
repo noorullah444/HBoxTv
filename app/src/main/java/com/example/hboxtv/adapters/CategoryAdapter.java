@@ -21,10 +21,16 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     private static final String TAG = CategoryAdapter.class.getSimpleName();
     private final CategoryByDeviceResponse categories;
     private final Context context;
+    private OnCategoryClickListener clickListener;
 
-    public CategoryAdapter(Context context, CategoryByDeviceResponse response) {
+    public CategoryAdapter(Context context, CategoryByDeviceResponse response/*, OnCategoryClickListener listener*/) {
         this.context = context;
         this.categories = response;
+//        this.clickListener = listener;
+    }
+
+    public void setOnItemClickListener(OnCategoryClickListener listener) {
+        clickListener = listener;
     }
 
     @NonNull
@@ -45,7 +51,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(context, "Category Id: " + category.getCategoryId(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(context, "Category Id: " + category.getCategoryId(), Toast.LENGTH_SHORT).show();
+                    clickListener.OnCategoryClick(category.getCategoryId());
                 }
             });
         }
@@ -63,5 +70,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             super(itemView);
             tvCategoryName = itemView.findViewById(R.id.tv_category_name);
         }
+    }
+
+    public interface OnCategoryClickListener{
+        void OnCategoryClick(String categoryId);
     }
 }

@@ -13,6 +13,11 @@ public class Category {
     @Expose
     private String categoryName;
 
+    public Category(String category_id, String category_name) {
+        this.categoryId = category_id;
+        this.categoryName = category_name;
+    }
+
     public String getCategoryId() {
         return categoryId;
     }

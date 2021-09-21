@@ -26,6 +26,7 @@ import com.example.hboxtv.model.CategoryByDeviceModel;
 import com.example.hboxtv.model.CategoryByDeviceResponse;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,10 +38,13 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = HomeActivity.class.getSimpleName();
 
+    public static List<Category> liveTVList, videoClubList, tvShowsList, replayList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        initLists();
         // to make status bar transparent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
@@ -50,6 +54,13 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         setClickListeners();
+    }
+
+    private void initLists() {
+        liveTVList = new ArrayList<>();
+        videoClubList = new ArrayList<>();
+        tvShowsList = new ArrayList<>();
+        replayList = new ArrayList<>();
     }
 
     private void setClickListeners() {
@@ -65,7 +76,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
-                Toast.makeText(HomeActivity.this, "Settings Clicked!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
             }
         });
 
