@@ -7,6 +7,7 @@ import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
 import com.example.hboxtv.model.SignUpModel;
 import com.example.hboxtv.model.SignUpResponse;
+import com.example.hboxtv.model.SubscribeModel;
 
 import java.util.List;
 
@@ -28,4 +29,7 @@ public interface ApiInterface {
 
     @POST("categorybydevice.php")
     Call<CategoryByDeviceResponse> getCategories(@Body CategoryByDeviceModel model);
+
+    @POST("Paypal.php")
+    Call<String> subscribe(@Body SubscribeModel body);
 }

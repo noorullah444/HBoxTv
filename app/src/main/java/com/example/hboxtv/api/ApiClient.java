@@ -1,5 +1,8 @@
 package com.example.hboxtv.api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -18,10 +21,14 @@ public class ApiClient {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build();
 
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .create();
+
         Retrofit retrofit = new Retrofit.Builder()
 //                .client(okHttpClient)
                 .baseUrl(ApiInterface.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         apiInterface = retrofit.create(ApiInterface.class);
     }

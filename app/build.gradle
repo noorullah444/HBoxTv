@@ -15,6 +15,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/LICENSE.md'
+    }
 
     buildTypes {
         release {
@@ -27,7 +32,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    dataBinding{
+    dataBinding {
         enabled true
     }
 }
@@ -56,4 +61,26 @@ dependencies {
     // glide dependency
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+
+    // mail dependency
+    implementation 'com.sun.mail:android-mail:1.6.6'
+    implementation 'com.sun.mail:android-activation:1.6.6'
+
+    // exoplayer dependency
+    implementation 'com.google.android.exoplayer:exoplayer:2.15.0'
+
+    // for core support in exoplayer.
+//    implementation 'com.google.android.exoplayer:exoplayer-core:2.15.0'
+
+    // for adding dash support in our exoplayer.
+//    implementation 'com.google.android.exoplayer:exoplayer-dash:2.15.0'
+
+    // for adding hls support in exoplayer.
+//    implementation 'com.google.android.exoplayer:exoplayer-hls:2.15.0'
+
+    // for smooth streaming of video in our exoplayer.
+//    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.15.0'
+
+    // for generating default ui of exoplayer
+//    implementation 'com.google.android.exoplayer:exoplayer-ui:2.15.0'
 }

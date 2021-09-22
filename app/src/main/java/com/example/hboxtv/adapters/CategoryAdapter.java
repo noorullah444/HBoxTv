@@ -45,14 +45,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull @NotNull CategoryAdapter.ViewHolder holder, int position) {
         Category category = categories.getResponse().get(position);
         if (category != null) {
-            Log.d(TAG, "onBindViewHolder: categories: "+ category.getCategoryName());
+            Log.d(TAG, "onBindViewHolder: categories: " + category.getCategoryName());
             holder.tvCategoryName.setText(category.getCategoryName());
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 //                    Toast.makeText(context, "Category Id: " + category.getCategoryId(), Toast.LENGTH_SHORT).show();
-                    clickListener.OnCategoryClick(category.getCategoryId());
+                    if (clickListener != null)
+                        clickListener.OnCategoryClick(category.getCategoryId());
                 }
             });
         }
@@ -72,7 +73,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         }
     }
 
-    public interface OnCategoryClickListener{
+    public interface OnCategoryClickListener {
         void OnCategoryClick(String categoryId);
     }
 }

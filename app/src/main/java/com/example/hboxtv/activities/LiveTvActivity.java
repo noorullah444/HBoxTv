@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,7 +47,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LiveTvActivity extends AppCompatActivity {
+public class LiveTvActivity extends AppCompatActivity implements CategoryAdapter.OnCategoryClickListener {
     private static final String TAG = LiveTvActivity.class.getSimpleName();
     private static final String JSON_URL = "http://54.36.204.161/iptvapi/objects/categorybydevice.php";
     ApiInterface apiInterface;
@@ -96,10 +97,8 @@ public class LiveTvActivity extends AppCompatActivity {
     }
 
     private void getCategoriesByVolley(String uid, String guid) {
-
         try {
             JSONObject jsonBody = new JSONObject();
-
             jsonBody.put("deviceuid", uid);
             jsonBody.put("customerguid", guid);
             jsonBody.put("category_type", "1");
@@ -228,6 +227,7 @@ public class LiveTvActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.hasFixedSize();
         CategoryAdapter adapter = new CategoryAdapter(this, categories);
+        adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
         runOnUiThread(new Runnable() {
             @Override
@@ -237,4 +237,12 @@ public class LiveTvActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    public void OnCategoryClick(String categoryId) {
+        Intent intent = new Intent(LiveTvActivity.this, ChannelsActivity.class);
+        intent.putExtra("category_id", categoryId);
+        startActivity(intent);
+    }
+
 }

@@ -155,6 +155,7 @@ public class SignInActivity extends AppCompatActivity {
                     if (response.body() != null) {
                         String GUID = response.body().getGuid();
                         String UID = response.body().getUid();
+                        String expiryDate = response.body().getExpDate();
 
                         // saving guid to shared prefs
 //                        if (!GUID.isEmpty()) {
@@ -162,6 +163,7 @@ public class SignInActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("uid", UID);
                             editor.putString("guid", GUID);
+                            editor.putString("expiry_date", expiryDate);
                             editor.putBoolean("isLogin", true);
                             editor.apply();
 //                        }

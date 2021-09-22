@@ -242,7 +242,7 @@ public class TvShowsActivity extends AppCompatActivity implements CategoryAdapte
 
     @Override
     public void OnCategoryClick(String categoryId) {
-        getSeriesList(categoryId);
+//        getSeriesList(categoryId);
         Intent intent = new Intent(TvShowsActivity.this, SeriesActivity.class);
         intent.putExtra("category_id", categoryId);
         startActivity(intent);

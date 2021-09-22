@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,7 +54,18 @@ public class HomeActivity extends AppCompatActivity {
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
+        setExpiryDate();
         setClickListeners();
+    }
+
+    private void setExpiryDate() {
+        TextView tvExpiryDate = findViewById(R.id.tv_expiry_date);
+
+        // get value from shared prefs
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HomeActivity.this);
+        String expiryDate = preferences.getString("expiry_date", "");
+        if (expiryDate != null)
+            tvExpiryDate.setText("Expiration: "+ expiryDate);
     }
 
     private void initLists() {

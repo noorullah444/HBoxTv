@@ -233,11 +233,12 @@
     </HorizontalScrollView>
 
     <TextView
+        android:id="@+id/tv_expiry_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_gravity="center_horizontal"
-        android:text="Expiration: April 15,2022"
+        android:text="Expiration: "
         android:textSize="16sp"
         android:textColor="@color/white"
         android:fontFamily="@font/poppins_regular"

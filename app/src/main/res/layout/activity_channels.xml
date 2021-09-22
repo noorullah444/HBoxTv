@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/home_bg"
-    tools:context=".activities.LiveTvActivity">
+    tools:context=".activities.ChannelsActivity">
 
     <LinearLayout
         android:id="@+id/header_layout"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins_medium"
             android:gravity="center"
-            android:text="Live TV"
+            android:text="TV Shows"
             android:textColor="@color/white"
             android:textSize="22sp" />
 
@@ -81,82 +81,68 @@
         </LinearLayout>
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header_layout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:orientation="horizontal">
 
-        <com.facebook.shimmer.ShimmerFrameLayout
-            android:id="@+id/shimmer_view_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:shimmer_repeat_mode="restart"
-            app:shimmer_shape="radial">
+        <LinearLayout
+            android:id="@+id/channels_layout"
+            android:visibility="visible"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <LinearLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                tools:listitem="@layout/item_channel"
+                android:layout_margin="8dp" />
+        </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+        <LinearLayout
+            android:visibility="visible"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-                    <include layout="@layout/shimmer_item_layout"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.5"
+                android:orientation="vertical">
 
-                    <include layout="@layout/shimmer_item_layout"/>
+                <com.google.android.exoplayer2.ui.PlayerView
+                    android:id="@+id/video_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
 
-                    <include layout="@layout/shimmer_item_layout"/>
+                <ImageView
+                    android:id="@+id/ic_full_screen"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="8dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:src="@drawable/ic_full_screen"/>
 
-                    <include layout="@layout/shimmer_item_layout"/>
+            </RelativeLayout>
 
-                    <include layout="@layout/shimmer_item_layout"/>
+            <LinearLayout
+                android:id="@+id/extra_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/item_bg"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-                    <include layout="@layout/shimmer_item_layout"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <include layout="@layout/shimmer_item_layout"/>
-
-                    <include layout="@layout/shimmer_item_layout"/>
-
-                    <include layout="@layout/shimmer_item_layout"/>
-
-                    <include layout="@layout/shimmer_item_layout"/>
-
-                    <include layout="@layout/shimmer_item_layout"/>
-
-                    <include layout="@layout/shimmer_item_layout"/>
-                </LinearLayout>
             </LinearLayout>
-        </com.facebook.shimmer.ShimmerFrameLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp" />
-
-        <ProgressBar
-            android:visibility="gone"
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:indeterminateTint="@color/purple_200"/>
-
-    </RelativeLayout>
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>
