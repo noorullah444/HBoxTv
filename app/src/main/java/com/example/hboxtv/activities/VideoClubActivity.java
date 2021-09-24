@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -43,7 +45,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class VideoClubActivity extends AppCompatActivity {
+public class VideoClubActivity extends AppCompatActivity implements CategoryAdapter.OnCategoryClickListener {
     private static final String TAG = LiveTvActivity.class.getSimpleName();
     private static final String JSON_URL = "http://54.36.204.161/iptvapi/objects/categorybydevice.php";
     private ApiInterface apiInterface;
@@ -223,6 +225,7 @@ public class VideoClubActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.hasFixedSize();
         CategoryAdapter adapter = new CategoryAdapter(this, categories);
+        adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
         runOnUiThread(new Runnable() {
             @Override
@@ -231,5 +234,12 @@ public class VideoClubActivity extends AppCompatActivity {
                 container.setVisibility(View.GONE);
             }
         });
+    }
+
+    @Override
+    public void OnCategoryClick(String categoryId) {
+        Intent intent = new Intent(VideoClubActivity.this, MoviesActivity.class);
+        intent.putExtra("category_id", categoryId);
+        startActivity(intent);
     }
 }

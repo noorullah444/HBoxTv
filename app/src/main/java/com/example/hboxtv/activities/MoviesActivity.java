@@ -1,5 +1,9 @@
 package com.example.hboxtv.activities;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -11,12 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
-import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,14 +24,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
-import com.example.hboxtv.adapters.ChannelAdapter;
+import com.example.hboxtv.adapters.MoviesAdapter;
 import com.example.hboxtv.adapters.SeriesAdapter;
 import com.example.hboxtv.model.Channel;
 import com.example.hboxtv.model.Series;
-import com.google.android.exoplayer2.ExoPlayer;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.PlayerView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,26 +41,21 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ChannelsActivity extends AppCompatActivity implements ChannelAdapter.OnChannelClickListener {
-    private static final String TAG = ChannelsActivity.class.getSimpleName();
-    private PlayerView playerView;
-    private ExoPlayer simpleExoPlayer;
+public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.OnMoviesClickListener {
+    private static final String TAG = MoviesActivity.class.getSimpleName();
     private String UID;
     private String GUID;
     private String categoryId;
-    private String server;
-    private String userName;
-    private String password;
-    List<Channel> channelList = new ArrayList<>();
-
-    // url of video which we are loading.
-//    String videoURL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-    String videoURL = "http://canalvip.ddns.net:25443/live/noormobipixelsgmailcom270763/NY4T45RN62/9152";
+    List<Channel> moviesList = new ArrayList<>();
+    ShimmerFrameLayout container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_channels);
+        setContentView(R.layout.activity_movies);
+        container = findViewById(R.id.shimmer_view_container);
+        container.startShimmer();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
             // for full screen activity
@@ -70,16 +63,12 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
-        initViews();
-        setClickListeners();
+        setOnClickListeners();
 
         // get value from shared prefs
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ChannelsActivity.this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MoviesActivity.this);
         UID = preferences.getString("uid", "");
         GUID = preferences.getString("guid", "");
-        server = preferences.getString("server", "");
-        userName = preferences.getString("user_name", "");
-        password = preferences.getString("password", "");
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -91,17 +80,25 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         executor.execute(() -> {
             //Background work here
             if (UID != null && GUID != null) {
-                getChannelList(categoryId);
+                getMoviesList(categoryId);
             }
             handler.post(() -> {
                 //UI Thread work here
             });
         });
-
-//        playVideo(videoURL);
     }
 
-    private void getChannelList(String categoryId) {
+    private void setOnClickListeners() {
+        findViewById(R.id.btn_back_arrow).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(MoviesActivity.this, R.anim.button_click));
+                onBackPressed();
+            }
+        });
+    }
+
+    private void getMoviesList(String categoryId) {
         final String JSON_URL = "http://54.36.204.161/iptvapi/objects/channelsbycategory.php";
         try {
             JSONObject jsonBody = new JSONObject();
@@ -134,9 +131,9 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
                                         jsonObject1.getString("container_extension"));
 
                                 //adding the list
-                                channelList.add(channel);
+                                moviesList.add(channel);
                             }
-                            populateRecyclerView(channelList);
+                            populateRecyclerView(moviesList);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -180,90 +177,29 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         }
     }
 
-    private void populateRecyclerView(List<Channel> channelList) {
+    private void populateRecyclerView(List<Channel> seriesList) {
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 1);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 4);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.hasFixedSize();
-        ChannelAdapter adapter = new ChannelAdapter(this, channelList);
+        MoviesAdapter adapter = new MoviesAdapter(this, seriesList);
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
-    }
-
-    private void setClickListeners() {
-        findViewById(R.id.btn_back_arrow).setOnClickListener(new View.OnClickListener() {
+        runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View view) {
-                view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
-                onBackPressed();
-            }
-        });
-
-        findViewById(R.id.ic_full_screen).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
-                LinearLayout channelsLayout = findViewById(R.id.channels_layout);
-                LinearLayout headerLayout = findViewById(R.id.header_layout);
-                LinearLayout extraLayout = findViewById(R.id.extra_layout);
-
-                if (channelsLayout.getVisibility() == View.VISIBLE && headerLayout.getVisibility() == View.VISIBLE) {
-                    channelsLayout.setVisibility(View.GONE);
-                    headerLayout.setVisibility(View.GONE);
-                    extraLayout.setVisibility(View.GONE);
-                } else {
-                    channelsLayout.setVisibility(View.VISIBLE);
-                    headerLayout.setVisibility(View.VISIBLE);
-                    extraLayout.setVisibility(View.VISIBLE);
-                }
+            public void run() {
+                container.stopShimmer();
+                container.setVisibility(View.GONE);
             }
         });
     }
 
-    private void playVideo(String videoURL) {
-        try {
-            simpleExoPlayer = new SimpleExoPlayer.Builder(this).build();
-            playerView.setPlayer(simpleExoPlayer);
-            MediaItem mediaItem = MediaItem.fromUri(videoURL);
-            simpleExoPlayer.addMediaItem(mediaItem);
-            simpleExoPlayer.prepare();
-            simpleExoPlayer.setPlayWhenReady(true);
-        } catch (Exception e){
-            Log.d(TAG, "playVideo: exception: "+ e.getMessage());
-        }
-
-    }
-
-    private void initViews() {
-        playerView = findViewById(R.id.video_view);
-    }
-
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        releasePlayer();
-    }
-
-    private void releasePlayer() {
-        if (simpleExoPlayer != null) {
-//            updateResumePosition();
-            simpleExoPlayer.stop();
-            simpleExoPlayer.release();
-            simpleExoPlayer = null;
-//            trackSelector = null;
-//            trackSelectionHelper = null;
-//            eventLogger = null;
-        }
-    }
-
-    @Override
-    public void OnChannelClick(String channelId, String streamType, String extension) {
-        Toast.makeText(this, "Channel Id: "+ channelId+ "type: "+ streamType, Toast.LENGTH_SHORT).show();
-        if (userName != null && password != null) {
-            String url = server+"/"+streamType+"/"+userName+"/"+password+"/"+channelId+extension;
-            Log.d(TAG, "OnChannelClick: url: "+ url);
-            playVideo(url);
-        }
-
+    public void OnMovieClick(String movieId, String streamType, String extension) {
+        Intent intent = new Intent(MoviesActivity.this, PlayerActivity.class);
+        intent.putExtra("movie_id", movieId);
+        intent.putExtra("stream_type", streamType);
+        intent.putExtra("extension", extension);
+        startActivity(intent);
     }
 }

@@ -60,12 +60,13 @@ public class Channel {
     @Expose
     private String tvArchiveDuration;
 
-    public Channel(String channelId, String name, String streamType, String streamIcon, String added) {
+    public Channel(String channelId, String name, String streamType, String streamIcon, String added, String containerExtension) {
         this.channelid = channelId;
         this.name = name;
         this.streamType = streamType;
         this.streamIcon = streamIcon;
         this.added = added;
+        this.containerExtension = containerExtension;
     }
 
     public String getChannelId() {

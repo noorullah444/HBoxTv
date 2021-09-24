@@ -60,7 +60,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
                 @Override
                 public void onClick(View view) {
 //                    Toast.makeText(context, "Category Id: " + category.getCategoryId(), Toast.LENGTH_SHORT).show();
-                    clickListener.OnChannelClick(channel.getChannelId());
+                    clickListener.OnChannelClick(channel.getChannelId(), channel.getStreamType(), channel.getContainerExtension());
 
                     row_index = position;
                     notifyDataSetChanged();
@@ -96,6 +96,6 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
     }
 
     public interface OnChannelClickListener{
-        void OnChannelClick(String channelId);
+        void OnChannelClick(String channelId, String streamType, String extension);
     }
 }

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/home_bg"
-    tools:context=".activities.SeriesActivity">
+    tools:context=".activities.MoviesActivity">
 
     <LinearLayout
         android:id="@+id/header_layout"
@@ -14,7 +14,6 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -24,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:padding="5dp"
+            android:padding="12dp"
             android:src="@drawable/ic_arrow_back" />
 
         <TextView
@@ -33,7 +32,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins_medium"
             android:gravity="center"
-            android:text="Series"
+            android:text="Movies"
             android:textColor="@color/white"
             android:textSize="22sp" />
 
@@ -179,8 +178,9 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            tools:listitem="@layout/item_series"
             android:layout_margin="8dp" />
 
         <ProgressBar

@@ -156,6 +156,9 @@ public class SignInActivity extends AppCompatActivity {
                         String GUID = response.body().getGuid();
                         String UID = response.body().getUid();
                         String expiryDate = response.body().getExpDate();
+                        String username = response.body().getUsername();
+                        String password = response.body().getPassword();
+                        String server = response.body().getServer();
 
                         // saving guid to shared prefs
 //                        if (!GUID.isEmpty()) {
@@ -164,6 +167,9 @@ public class SignInActivity extends AppCompatActivity {
                             editor.putString("uid", UID);
                             editor.putString("guid", GUID);
                             editor.putString("expiry_date", expiryDate);
+                            editor.putString("server", server);
+                            editor.putString("user_name", username);
+                            editor.putString("password", password);
                             editor.putBoolean("isLogin", true);
                             editor.apply();
 //                        }

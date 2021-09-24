@@ -13,8 +13,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HBoxTv"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activities.SubscriptionActivity"
-            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".activities.PlayerActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".activities.MoviesActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".activities.SubscriptionActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".activities.ContactUsActivity"
             android:screenOrientation="landscape" />
