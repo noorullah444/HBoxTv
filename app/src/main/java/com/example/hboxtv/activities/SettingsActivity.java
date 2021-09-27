@@ -76,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(SettingsActivity.this, R.anim.button_click));
-                Toast.makeText(SettingsActivity.this, "Packages Clicked!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(SettingsActivity.this, PackageSelectionActivity.class));
             }
         });
 

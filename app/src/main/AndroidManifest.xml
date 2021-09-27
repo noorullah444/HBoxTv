@@ -13,6 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HBoxTv"
         android:usesCleartextTraffic="true">
+        <activity android:name=".activities.PackageSelectionActivity"
+            android:screenOrientation="landscape"/>
         <activity
             android:name=".activities.PlayerActivity"
             android:screenOrientation="landscape" />
