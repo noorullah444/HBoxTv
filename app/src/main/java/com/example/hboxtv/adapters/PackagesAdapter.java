@@ -1,6 +1,7 @@
 package com.example.hboxtv.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,9 @@ import com.example.hboxtv.model.Package;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHolder> {
     private static final String TAG = PackagesAdapter.class.getSimpleName();
@@ -30,10 +33,18 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
     private final Context context;
     private OnPackageSelectListener clickListener;
 
-    public PackagesAdapter(Context context, List<Package> packages/*, OnCategoryClickListener listener*/) {
+    //Set the values
+    Set<String> set = new HashSet<String>();
+    Boolean[] checkedStatus;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
+
+    public PackagesAdapter(Context context, List<Package> packages, Boolean[] checkedStatus/*, OnCategoryClickListener listener*/) {
         this.context = context;
         this.packageList = packages;
+        this.checkedStatus = checkedStatus;
         selectedPackagesList.addAll(packageList);
+        Log.d(TAG, "PackagesAdapter: selected: "+ selectedPackagesList.size());
 //        this.clickListener = listener;
     }
 
@@ -55,7 +66,10 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
         if (mPackage != null) {
             holder.tvPackageName.setText(mPackage.getPackageName());
             // select all package at first
-            holder.checkBoxPackage.setChecked(true);
+            holder.checkBoxPackage.setChecked(checkedStatus[position]);
+
+            prefs = context.getSharedPreferences("status", Context.MODE_PRIVATE);
+            editor = prefs.edit();
 
             /*holder.tvPackageName.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -69,10 +83,16 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(b) {
                         selectedPackagesList.add(mPackage);
+                        editor.putStringSet("key", set);
+                        editor.apply();
+                        save_pos_check(position, true);
                         clickListener.OnPackageSelect(selectedPackagesList);
                     }
                     else {
                         selectedPackagesList.remove(mPackage);
+                        editor.putStringSet("key", set);
+                        editor.apply();
+                        save_pos_check(position, false);
                         clickListener.OnPackageSelect(selectedPackagesList);
                     }
                 }
@@ -98,5 +118,15 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
 
     public interface OnPackageSelectListener {
         void OnPackageSelect(List<Package> list);
+    }
+
+    private void save_pos_check(int position, boolean state) {
+        checkedStatus[position] = state;
+        String key = Integer.toString(position);
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("status", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(key, state);
+        editor.apply();
     }
 }

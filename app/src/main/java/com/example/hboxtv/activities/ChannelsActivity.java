@@ -29,16 +29,21 @@ import com.example.hboxtv.adapters.ChannelAdapter;
 import com.example.hboxtv.adapters.SeriesAdapter;
 import com.example.hboxtv.model.Channel;
 import com.example.hboxtv.model.Series;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.PlayerView;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,8 +61,9 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
     List<Channel> channelList = new ArrayList<>();
 
     // url of video which we are loading.
-//    String videoURL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-    String videoURL = "http://canalvip.ddns.net:25443/live/noormobipixelsgmailcom270763/NY4T45RN62/9152";
+    String videoURL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+//    String videoURL = "http://canalvip.ddns.net:25443/live/noormobipixelsgmailcom270763/NY4T45RN62/9152";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -231,6 +237,13 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         } catch (Exception e){
             Log.d(TAG, "playVideo: exception: "+ e.getMessage());
         }
+
+        simpleExoPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onPlayerError(@NotNull PlaybackException error) {
+                Log.d(TAG, "onPlayerError: "+ error.getCause());
+            }
+        });
 
     }
 

@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -39,9 +40,6 @@ public class PlayerActivity extends AppCompatActivity {
     private static final String TAG = PlayerActivity.class.getSimpleName();
     private PlayerView playerView;
     private ExoPlayer player;
-    private String server;
-    private String userName;
-    private String password;
     private String STREAM_URL;
     private ProgressBar progressBar;
 
@@ -63,35 +61,23 @@ public class PlayerActivity extends AppCompatActivity {
         playerView = findViewById(R.id.video_view);
         progressBar = findViewById(R.id.progress_bar);
 
-        // get value from shared prefs
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(PlayerActivity.this);
-        server = preferences.getString("server", "");
-        userName = preferences.getString("user_name", "");
-        password = preferences.getString("password", "");
-
         Intent intent = getIntent();
         if (intent != null) {
-            String streamType = intent.getStringExtra("stream_type");
-            String movieId = intent.getStringExtra("movie_id");
-            String extension = intent.getStringExtra("extension");
+            STREAM_URL = intent.getStringExtra("stream_url");
+            initializePlayer();
 
-            if (userName != null && password != null) {
-                STREAM_URL = server + "/" + streamType + "/" + userName + "/" + password + "/" + movieId + "." + extension;
-                Log.d(TAG, "OnChannelClick: url: " + STREAM_URL);
-//                initializePlayer();
-            }
         }
     }
 
-    public void errorDialog() {
+    public void errorDialog(String message) {
         AlertDialog.Builder adb = new AlertDialog.Builder(PlayerActivity.this);
-        adb.setTitle("Could not able to stream video");
-        adb.setMessage("It seems that something is going wrong.\nPlease try again.");
+        adb.setTitle("Couldn't able to stream video");
+        adb.setMessage(message);
         adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                finish(); // take out user from this activity. you can skip this
+                finish(); // take out user from this activity.
             }
         });
         AlertDialog ad = adb.create();
@@ -166,6 +152,17 @@ public class PlayerActivity extends AppCompatActivity {
             player.seekTo(currentWindow, playbackPosition);
             player.setPlayWhenReady(playWhenReady);
             player.prepare();
+
+            player.addListener(new Player.Listener() {
+                @Override
+                public void onPlayerError(PlaybackException error) {
+                    Log.e(TAG, "onPlayerError: message: "+error.getMessage());
+                    Log.e(TAG, "onPlayerError: localized message: "+error.getLocalizedMessage());
+                    Log.e(TAG, "onPlayerError: error code name: "+error.getErrorCodeName());
+                    Log.e(TAG, "onPlayerError: cause: "+error.getCause());
+                    errorDialog(error.getMessage());
+                }
+            });
         } catch (Exception e) {
             Log.d(TAG, "playVideo: exception: " + e.getMessage());
         }

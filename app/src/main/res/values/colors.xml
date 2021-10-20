@@ -13,7 +13,7 @@
     <color name="blue">#CC2E3180</color>
 
     <color name="item_selected">#ffffff</color>
-    <color name="item_unselected">#50ffffff</color>
+    <color name="item_unselected">#50F9F9F9</color>
     <color name="navigation_background">#171717</color>
 
     <color name="colorPrimary">#D61E21</color>
@@ -21,5 +21,6 @@
     <color name="colorAccent">#ff4f4f</color>
     <color name="background_app">#393939</color>
     <color name="transparent">#00FFFFFF</color>
+    <color name="colorYellow">#FFC107</color>
 
 </resources>

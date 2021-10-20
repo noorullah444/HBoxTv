@@ -10,10 +10,10 @@
     <ImageView
         android:id="@+id/iv_movie_cover"
         android:layout_width="match_parent"
-        android:layout_height="140dp"
+        android:layout_height="160dp"
         android:layout_margin="5dp"
         android:layout_gravity="center"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
         android:src="@drawable/ic_launcher_background"/>
 
     <TextView

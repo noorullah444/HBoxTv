@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,6 +46,7 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
     private String UID;
     private String GUID;
     private ProgressBar progressBar;
+    private boolean isSelected = false;
     List<Package> packagesList = new ArrayList<>();
     List<Package> selectedPackagesList = new ArrayList<>();
 
@@ -57,6 +61,7 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
         setOnclickListeners();
+        progressBar = findViewById(R.id.progress_bar);
 
         // get value from shared prefs
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(PackageSelectionActivity.this);
@@ -87,9 +92,8 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    Log.d(TAG, "123onResponse: " + response.toString());
-
                     if (response != null) {
+                        Log.d(TAG, "123onResponse: " + response.toString());
                         try {
                             //getting the whole json object from the response
                             JSONArray jsonArray = response.getJSONArray("response");
@@ -102,7 +106,8 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
                                 Package mPackage = new Package(
                                         jsonObject1.getString("packageID"),
                                         jsonObject1.getString("packageName"),
-                                        jsonObject1.getString("deviceID"));
+                                        jsonObject1.getString("deviceID"),
+                                        isSelected);
 
                                 //adding the list
                                 packagesList.add(mPackage);
@@ -164,12 +169,26 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(PackageSelectionActivity.this, R.anim.button_click));
-                updatePackages();
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler(Looper.getMainLooper());
+                executor.execute(() -> {
+                    //Background work here
+                    updatePackages();
+                    handler.post(() -> {
+                        //UI Thread work here
+                    });
+                });
             }
         });
     }
 
     private void updatePackages() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
         final String JSON_URL = "http://54.36.204.161/iptvapi/objects/packageupdate.php";
         try {
             JSONObject jsonBody = new JSONObject();
@@ -183,7 +202,9 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
                 public void onResponse(JSONObject response) {
                     if (response != null) {
                         try {
-                            Log.e(TAG, "onResponse: message: "+ response.get("response") );
+                            progressBar.setVisibility(View.GONE);
+                            Log.e(TAG, "onResponse: message: " + response.get("response"));
+                            showDialog(String.valueOf(response.get("response")));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -227,19 +248,45 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
     }
 
     private void populateRecyclerView(List<Package> packagesList) {
+        SharedPreferences sharedPreferences = getSharedPreferences("status", MODE_PRIVATE);
+        Boolean[] checkedStatus = new Boolean[packagesList.size()];
+
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 4);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.hasFixedSize();
-        PackagesAdapter adapter = new PackagesAdapter(this, packagesList);
-        adapter.setOnItemClickListener(this);
-        recyclerView.setAdapter(adapter);
+
+        try {
+            for (int index = 0; index < checkedStatus.length; index++)
+                checkedStatus[index] = sharedPreferences.getBoolean(Integer.toString(index), true);
+            PackagesAdapter adapter = new PackagesAdapter(this, packagesList, checkedStatus);
+            adapter.setOnItemClickListener(this);
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showDialog(String message) {
+        new AlertDialog.Builder(PackageSelectionActivity.this).setTitle("Updated!")
+                .setMessage(message)
+                .setCancelable(false)
+
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        onBackPressed();
+                    }
+                })
+                .show();
     }
 
     @Override
     public void OnPackageSelect(List<Package> selectedPackages) {
         selectedPackagesList.clear();
         selectedPackagesList.addAll(selectedPackages);
-        Log.e(TAG, "OnPackageSelect: selected packages: "+ selectedPackagesList.size());
+        Log.e(TAG, "OnPackageSelect: selected packages: " + selectedPackagesList.size());
     }
 }

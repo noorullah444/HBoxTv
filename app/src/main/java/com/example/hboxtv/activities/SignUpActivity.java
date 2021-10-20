@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +30,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,23 +57,33 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        checkPhoneStatePermission();
+//        checkPhoneStatePermission();
         ipAddress = getLocalIpAddress();
         initViews();
+        getUid();
 
         findViewById(R.id.button_sign_up).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // add animation
                 v.startAnimation(AnimationUtils.loadAnimation(SignUpActivity.this, R.anim.button_click));
 
                 if (confirmInput()) {
                     email = textInputEmail.getText().toString();
                     password = textInputPassword.getText().toString();
 
-                    Log.d(TAG, "onClick: email: " + email);
-                    Log.d(TAG, "onClick: password: " + password);
+                    Log.e(TAG, "onClick: email: " + email);
+                    Log.e(TAG, "onClick: password: " + password);
+                    Log.e(TAG, "onClick: uid: "+ UID);
+                    Log.e(TAG, "onClick: ip address: "+ ipAddress);
 
+                    if (UID == null){
+                        Toast.makeText(SignUpActivity.this, "Not able to get device UID!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (ipAddress == null) {
+                        Toast.makeText(SignUpActivity.this, "Not able to get device IP Address!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     registerNewUser(email, password, UID, ipAddress);
                 }
             }
@@ -205,7 +217,7 @@ public class SignUpActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
     }
 
-    private void checkPhoneStatePermission() {
+    /*private void checkPhoneStatePermission() {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
 
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -213,7 +225,7 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             getUid();
         }
-    }
+    }*/
 
     private void getUid() {
         try {
@@ -222,6 +234,16 @@ public class SignUpActivity extends AppCompatActivity {
                 UID = telephonyManager.getDeviceId();*/
 //            UID = UUID.randomUUID().toString();
             UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+//            UID = Build.ID;
+
+//            Log.d(TAG, "getUid: model: "+ Build.MODEL);
+//            Log.d(TAG, "getUid: MANUFACTURER: "+ Build.MANUFACTURER);
+//            Log.d(TAG, "getUid: DEVICE: "+ Build.DEVICE);
+//            Log.d(TAG, "getUid: ID: "+ Build.ID);
+//            Log.d(TAG, "getUid: PRODUCT: "+ Build.PRODUCT);
+//            Log.d(TAG, "getUid: SERIAL: "+ Build.SERIAL);
+//            Log.d(TAG, "getUid: BRAND: "+ Build.BRAND);
             Log.d(TAG, "getUid: " + UID);
         } catch (Exception e) {
             e.getStackTrace();
@@ -246,7 +268,7 @@ public class SignUpActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override
+    /*@Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_READ_PHONE_STATE) {
@@ -258,5 +280,5 @@ public class SignUpActivity extends AppCompatActivity {
                 Log.d(TAG, "onRequestPermissionsResult: permission denied!");
             }
         }
-    }
+    }*/
 }

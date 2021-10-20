@@ -1,8 +1,6 @@
 package com.example.hboxtv.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,8 +12,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,56 +24,72 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.example.hboxtv.R;
-import com.example.hboxtv.adapters.MoviesAdapter;
-import com.example.hboxtv.adapters.SeriesAdapter;
 import com.example.hboxtv.model.Channel;
-import com.example.hboxtv.model.Series;
-import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.OnMoviesClickListener {
-    private static final String TAG = MoviesActivity.class.getSimpleName();
+public class MovieDetailsActivity extends AppCompatActivity {
+    private static final String TAG = MovieDetailsActivity.class.getSimpleName();
     private String UID;
     private String GUID;
-    private String categoryId;
-    List<Channel> moviesList = new ArrayList<>();
-    ShimmerFrameLayout container;
+    private String channelId;
+    private ImageView movieCover;
+    private TextView tvMovieName;
+    private TextView tvGenre;
+    private TextView tvCasting;
+    private TextView tvDescription;
+    private TextView tvDuration;
+    private Button btnPlay;
+    private RatingBar ratingBar;
+
+    private String movieName;
+    private String cover;
+    private String genre;
+    private String casting;
+    private String description;
+    private String rating;
+    private String duration;
+    private String STREAM_URL;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movies);
-        container = findViewById(R.id.shimmer_view_container);
-        container.startShimmer();
-
+        setContentView(R.layout.activity_movie_details);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
             // for full screen activity
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-
-        setOnClickListeners();
+        initViews();
 
         // get value from shared prefs
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MoviesActivity.this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MovieDetailsActivity.this);
         UID = preferences.getString("uid", "");
         GUID = preferences.getString("guid", "");
+        String server = preferences.getString("server", "");
+        String userName = preferences.getString("user_name", "");
+        String password = preferences.getString("password", "");
 
         Intent intent = getIntent();
         if (intent != null) {
-            categoryId = intent.getStringExtra("category_id");
+            channelId = intent.getStringExtra("channel_id");
+            String streamType = intent.getStringExtra("stream_type");
+            String extension = intent.getStringExtra("extension");
+
+            if (userName != null && password != null) {
+                STREAM_URL = server + "/" + streamType + "/" + userName + "/" + password + "/" + channelId + "." + extension;
+                Log.d(TAG, "OnChannelClick: url: " + STREAM_URL);
+//                initializePlayer();
+            }
         }
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -80,39 +97,53 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.O
         executor.execute(() -> {
             //Background work here
             if (UID != null && GUID != null) {
-                getMoviesList(categoryId);
+                getMoviesDetails(channelId);
             }
             handler.post(() -> {
                 //UI Thread work here
             });
         });
-    }
 
-    private void setOnClickListeners() {
-        findViewById(R.id.btn_back_arrow).setOnClickListener(new View.OnClickListener() {
+        btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                view.startAnimation(AnimationUtils.loadAnimation(MoviesActivity.this, R.anim.button_click));
-                onBackPressed();
+                if (STREAM_URL != null) {
+                    Intent gotoPlayer = new Intent(MovieDetailsActivity.this, PlayerActivity.class);
+                    gotoPlayer.putExtra("stream_url", STREAM_URL);
+                    startActivity(gotoPlayer);
+                }
             }
         });
     }
 
-    private void getMoviesList(String categoryId) {
-        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/channelsbycategory.php";
+    private void initViews() {
+        movieCover = findViewById(R.id.iv_movie_cover);
+        tvMovieName = findViewById(R.id.tv_movie_name);
+        tvGenre = findViewById(R.id.tv_genre);
+        tvCasting = findViewById(R.id.tv_casting);
+        tvDescription = findViewById(R.id.tv_description);
+        tvDuration = findViewById(R.id.tv_duration);
+        btnPlay = findViewById(R.id.btn_play_movie);
+        ratingBar = findViewById(R.id.ratingBar);
+        progressBar = findViewById(R.id.progress_bar);
+    }
+
+    private void getMoviesDetails(String channelId) {
+        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/voddetailsbychannelid.php";
         try {
             JSONObject jsonBody = new JSONObject();
 
             jsonBody.put("deviceuid", UID);
             jsonBody.put("customerguid", GUID);
-            jsonBody.put("categoryID", categoryId);
+            jsonBody.put("channelid", channelId);
 
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     if (response != null) {
                         try {
-                            Log.d(TAG, "123onResponse: " + response.toString());
+                            progressBar.setVisibility(View.GONE);
+                            Log.d(TAG, "kaka: " + response.toString());
                             //getting the whole json object from the response
                             JSONArray jsonArray = response.getJSONArray("response");
 
@@ -120,30 +151,25 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.O
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 //getting the json object of the particular index inside the array
                                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-
-                                Channel channel = new Channel(
-                                        jsonObject1.getString("channelid"),
-                                        jsonObject1.getString("name"),
-                                        jsonObject1.getString("stream_type"),
-                                        jsonObject1.getString("stream_icon"),
-                                        jsonObject1.getString("added"),
-                                        jsonObject1.getString("container_extension"));
-
-                                //adding the list
-                                moviesList.add(channel);
+                                movieName = jsonObject1.getString("name");
+                                cover = jsonObject1.getString("movie_image");
+                                genre = jsonObject1.getString("genre");
+                                casting = jsonObject1.getString("cast");
+                                description = jsonObject1.getString("description");
+                                rating = jsonObject1.getString("rating");
+                                duration = jsonObject1.getString("duration");
                             }
-                            populateRecyclerView(moviesList);
-
+                            setData();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
-
                 }
             }, new com.android.volley.Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Log.d(TAG, "onErrorResponse: " + error.toString());
+                    progressBar.setVisibility(View.GONE);
 //                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -176,29 +202,17 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.O
         }
     }
 
-    private void populateRecyclerView(List<Channel> seriesList) {
-        RecyclerView recyclerView = findViewById(R.id.recyclerview);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 4);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.hasFixedSize();
-        MoviesAdapter adapter = new MoviesAdapter(this, seriesList);
-        adapter.setOnItemClickListener(this);
-        recyclerView.setAdapter(adapter);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                container.stopShimmer();
-                container.setVisibility(View.GONE);
-            }
-        });
-    }
+    private void setData() {
+        tvMovieName.setText(movieName);
+        tvGenre.setText(genre);
+        tvCasting.setText(casting);
+        tvDescription.setText(description);
+        tvDuration.setText(duration+" hrs");
+        ratingBar.setRating(Float.parseFloat(rating));
 
-    @Override
-    public void OnMovieClick(String channelId, String streamType, String extension) {
-        Intent intent = new Intent(MoviesActivity.this, MovieDetailsActivity.class);
-        intent.putExtra("channel_id", channelId);
-        intent.putExtra("stream_type", streamType);
-        intent.putExtra("extension", extension);
-        startActivity(intent);
+        Glide.with(MovieDetailsActivity.this)
+                .load(cover)
+                .placeholder(R.drawable.ic_launcher_background)
+                .into(movieCover);
     }
 }

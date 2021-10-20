@@ -86,7 +86,7 @@ public class SubscriptionActivity extends AppCompatActivity {
                 Handler handler = new Handler();
                 executor.execute(() -> {
                     // background work here
-//                    subscribePackage2("5", "1 month package");
+                    subscribePackage2("5", "1 month package");
                     handler.post(() -> {
                         // ui work here
                     });

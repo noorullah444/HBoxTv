@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.hboxtv.R;
 import com.example.hboxtv.model.Channel;
-import com.example.hboxtv.model.Series;
 
 import org.jetbrains.annotations.NotNull;
 

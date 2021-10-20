@@ -236,6 +236,7 @@ public class SignInActivity extends AppCompatActivity {
                 UID = telephonyManager.getDeviceId();*/
 //            UID = UUID.randomUUID().toString();
             UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+//            UID = Build.ID;
             Log.d(TAG, "getUid: " + UID);
         } catch (Exception e) {
             e.getStackTrace();
