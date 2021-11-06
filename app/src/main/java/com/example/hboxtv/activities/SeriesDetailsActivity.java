@@ -35,61 +35,41 @@ import org.json.JSONObject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MovieDetailsActivity extends AppCompatActivity {
-    private static final String TAG = MovieDetailsActivity.class.getSimpleName();
+public class SeriesDetailsActivity extends AppCompatActivity {
+    private static final String TAG = SeriesDetailsActivity.class.getSimpleName();
     private String UID;
     private String GUID;
-    private String channelId;
-    private ImageView movieCover;
-    private TextView tvMovieName;
+    private String seriesId;
+    private ProgressBar progressBar;
+
+    private TextView tvTitle;
     private TextView tvGenre;
     private TextView tvCasting;
-    private TextView tvDescription;
-    private TextView tvDuration;
-    private Button btnPlay;
+    private TextView tvPlot;
+    private ImageView ivCover;
     private RatingBar ratingBar;
-
-    private String movieName;
-    private String cover;
-    private String genre;
-    private String casting;
-    private String description;
-    private String rating;
-    private String duration;
-    private String STREAM_URL;
-    private ProgressBar progressBar;
+    private Button btnEpisodes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
-            // for full screen activity
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        setContentView(R.layout.activity_series_details);
+        //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+        // for full screen activity
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         initViews();
+        setClickListeners();
 
         // get value from shared prefs
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MovieDetailsActivity.this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SeriesDetailsActivity.this);
         UID = preferences.getString("uid", "");
         GUID = preferences.getString("guid", "");
-        String server = preferences.getString("server", "");
-        String userName = preferences.getString("user_name", "");
-        String password = preferences.getString("password", "");
 
         Intent intent = getIntent();
         if (intent != null) {
-            channelId = intent.getStringExtra("channel_id");
-            String streamType = intent.getStringExtra("stream_type");
-            String extension = intent.getStringExtra("extension");
-
-            if (userName != null && password != null) {
-                STREAM_URL = server + "/" + streamType + "/" + userName + "/" + password + "/" + channelId + "." + extension;
-                Log.d(TAG, "OnChannelClick: url: " + STREAM_URL);
-//                initializePlayer();
-            }
+            seriesId = intent.getStringExtra("series_id");
         }
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -97,62 +77,63 @@ public class MovieDetailsActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             if (UID != null && GUID != null) {
-                getMoviesDetails(channelId);
+                getSeriesDetails(seriesId);
             }
             handler.post(() -> {
                 //UI Thread work here
             });
         });
+    }
 
+    private void setClickListeners() {
         findViewById(R.id.btn_back_arrow).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                v.startAnimation(AnimationUtils.loadAnimation(MovieDetailsActivity.this, R.anim.button_click));
+                v.startAnimation(AnimationUtils.loadAnimation(SeriesDetailsActivity.this, R.anim.button_click));
                 onBackPressed();
             }
         });
 
-        btnPlay.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_episodes).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                view.startAnimation(AnimationUtils.loadAnimation(MovieDetailsActivity.this, R.anim.button_click));
-                if (STREAM_URL != null) {
-                    Intent gotoPlayer = new Intent(MovieDetailsActivity.this, PlayerActivity.class);
-                    gotoPlayer.putExtra("stream_url", STREAM_URL);
-                    startActivity(gotoPlayer);
-                }
+            public void onClick(View v) {
+                
             }
         });
     }
 
     private void initViews() {
-        movieCover = findViewById(R.id.iv_movie_cover);
-        tvMovieName = findViewById(R.id.tv_movie_name);
+        progressBar = findViewById(R.id.progress_bar);
+        tvTitle = findViewById(R.id.tv_title);
         tvGenre = findViewById(R.id.tv_genre);
         tvCasting = findViewById(R.id.tv_casting);
-        tvDescription = findViewById(R.id.tv_description);
-        tvDuration = findViewById(R.id.tv_duration);
-        btnPlay = findViewById(R.id.btn_play_movie);
-        ratingBar = findViewById(R.id.ratingBar);
-        progressBar = findViewById(R.id.progress_bar);
+        tvPlot = findViewById(R.id.tv_plot);
+        ivCover = findViewById(R.id.iv_series_cover);
+        ratingBar = findViewById(R.id.rating_bar_series);
+        btnEpisodes = findViewById(R.id.button_episodes);
     }
 
-    private void getMoviesDetails(String channelId) {
-        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/voddetailsbychannelid.php";
+    private void getSeriesDetails(String seriesId) {
+        progressBar.setVisibility(View.VISIBLE);
+        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/seriedetailsbyserieid.php";
         try {
             JSONObject jsonBody = new JSONObject();
 
             jsonBody.put("deviceuid", UID);
             jsonBody.put("customerguid", GUID);
-            jsonBody.put("channelid", channelId);
+            jsonBody.put("serieid", seriesId);
+
+            Log.d(TAG, "getSeriesDetails: uid: " + UID);
+            Log.d(TAG, "getSeriesDetails: guid: " + GUID);
+            Log.d(TAG, "getSeriesDetails: seriesId: "+ seriesId);
 
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     if (response != null) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d(TAG, "123onResponse: " + response.toString());
                         try {
-                            progressBar.setVisibility(View.GONE);
-                            Log.d(TAG, "kaka: " + response.toString());
                             //getting the whole json object from the response
                             JSONArray jsonArray = response.getJSONArray("response");
 
@@ -160,25 +141,34 @@ public class MovieDetailsActivity extends AppCompatActivity {
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 //getting the json object of the particular index inside the array
                                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                                movieName = jsonObject1.getString("name");
-                                cover = jsonObject1.getString("movie_image");
-                                genre = jsonObject1.getString("genre");
-                                casting = jsonObject1.getString("cast");
-                                description = jsonObject1.getString("description");
-                                rating = jsonObject1.getString("rating");
-                                duration = jsonObject1.getString("duration");
+
+                                String name = jsonObject1.getString("name");
+                                String genre = jsonObject1.getString("genre");
+                                String casting = jsonObject1.getString("cast");
+                                String plot = jsonObject1.getString("plot");
+                                String rating = jsonObject1.getString("rating_5based");
+                                String cover = jsonObject1.getString("cover");
+
+                                Log.d(TAG, "onResponse1: name: " + name);
+                                Log.d(TAG, "onResponse1: genre: " + genre);
+                                Log.d(TAG, "onResponse1: casting: " + casting);
+                                Log.d(TAG, "onResponse1: plot: " + plot);
+                                Log.d(TAG, "onResponse1: rating: " + rating);
+                                Log.d(TAG, "onResponse1: cover: " + cover);
+
+                                populateViews(name, genre, casting, plot, rating, cover);
                             }
-                            setData();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
+
                 }
             }, new com.android.volley.Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.d(TAG, "onErrorResponse: " + error.toString());
                     progressBar.setVisibility(View.GONE);
+                    Log.d(TAG, "onErrorResponse: " + error.toString());
 //                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -211,17 +201,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void setData() {
-        tvMovieName.setText(movieName);
+    private void populateViews(String name, String genre, String casting, String plot, String rating, String cover) {
+        tvTitle.setText(name);
         tvGenre.setText(genre);
         tvCasting.setText(casting);
-        tvDescription.setText(description);
-        tvDuration.setText(duration+" hrs");
+        tvPlot.setText(plot);
         ratingBar.setRating(Float.parseFloat(rating));
-
-        Glide.with(MovieDetailsActivity.this)
+        Glide.with(this)
                 .load(cover)
                 .placeholder(R.drawable.ic_launcher_background)
-                .into(movieCover);
+                .into(ivCover);
     }
 }

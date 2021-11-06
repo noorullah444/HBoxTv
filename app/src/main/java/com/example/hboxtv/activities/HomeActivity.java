@@ -6,35 +6,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hboxtv.R;
-import com.example.hboxtv.SplashActivity;
-import com.example.hboxtv.api.ApiClient;
-import com.example.hboxtv.api.ApiInterface;
 import com.example.hboxtv.model.Category;
-import com.example.hboxtv.model.CategoryByDeviceModel;
-import com.example.hboxtv.model.CategoryByDeviceResponse;
-import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = HomeActivity.class.getSimpleName();
@@ -54,8 +42,30 @@ public class HomeActivity extends AppCompatActivity {
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
+        setDateAndTime();
         setExpiryDate();
         setClickListeners();
+    }
+
+    private void setDateAndTime() {
+        TextView tvTime = findViewById(R.id.tv_time);
+        TextView tvDate = findViewById(R.id.tv_date);
+        tvTime.setText(getFormattedTime());
+        tvDate.setText(getFormattedDate());
+    }
+
+    public static CharSequence getFormattedDate() {
+        SimpleDateFormat df = new SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault());
+        String time = df.format(new Date());
+        Log.d(TAG, "getFormattedTime: "+time);
+        return time;
+    }
+
+    public static CharSequence getFormattedTime() {
+        SimpleDateFormat df = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        String time = df.format(new Date());
+        Log.d(TAG, "getFormattedTime: "+time);
+        return time;
     }
 
     private void setExpiryDate() {

@@ -189,6 +189,9 @@ public class SeriesActivity extends AppCompatActivity implements SeriesAdapter.O
 
     @Override
     public void OnSeriesClick(String seriesId) {
-        Toast.makeText(this, "Series Id: " + seriesId, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Series Id: " + seriesId, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(SeriesActivity.this, SeriesDetailsActivity.class);
+        intent.putExtra("series_id", seriesId);
+        startActivity(intent);
     }
 }

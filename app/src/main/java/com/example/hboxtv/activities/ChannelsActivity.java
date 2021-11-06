@@ -1,8 +1,8 @@
 package com.example.hboxtv.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,8 +12,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,10 +26,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.ChannelAdapter;
-import com.example.hboxtv.adapters.SeriesAdapter;
 import com.example.hboxtv.model.Channel;
-import com.example.hboxtv.model.Series;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
@@ -43,7 +40,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +56,10 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
     private String password;
     List<Channel> channelList = new ArrayList<>();
 
+    private boolean playWhenReady = true;
+    private int currentWindow = 0;
+    private long playbackPosition = 0L;
+
     // url of video which we are loading.
     String videoURL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 //    String videoURL = "http://canalvip.ddns.net:25443/live/noormobipixelsgmailcom270763/NY4T45RN62/9152";
@@ -69,12 +69,10 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_channels);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
-            // for full screen activity
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+        // for full screen activity
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         initViews();
         setClickListeners();
@@ -119,9 +117,8 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    Log.d(TAG, "123onResponse: " + response.toString());
-
                     if (response != null) {
+                        Log.d(TAG, "123onResponse: " + response.toString());
                         try {
                             //getting the whole json object from the response
                             JSONArray jsonArray = response.getJSONArray("response");
@@ -232,8 +229,9 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
             playerView.setPlayer(simpleExoPlayer);
             MediaItem mediaItem = MediaItem.fromUri(videoURL);
             simpleExoPlayer.addMediaItem(mediaItem);
+            simpleExoPlayer.seekTo(currentWindow, playbackPosition);
+            simpleExoPlayer.setPlayWhenReady(playWhenReady);
             simpleExoPlayer.prepare();
-            simpleExoPlayer.setPlayWhenReady(true);
         } catch (Exception e){
             Log.d(TAG, "playVideo: exception: "+ e.getMessage());
         }
@@ -241,7 +239,11 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         simpleExoPlayer.addListener(new Player.Listener() {
             @Override
             public void onPlayerError(@NotNull PlaybackException error) {
-                Log.d(TAG, "onPlayerError: "+ error.getCause());
+                Log.e(TAG, "onPlayerError: message: "+error.getMessage());
+                Log.e(TAG, "onPlayerError: localized message: "+error.getLocalizedMessage());
+                Log.e(TAG, "onPlayerError: error code name: "+error.getErrorCodeName());
+                Log.e(TAG, "onPlayerError: cause: "+error.getCause());
+                errorDialog(error.getMessage());
             }
         });
 
@@ -257,7 +259,7 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         releasePlayer();
     }
 
-    private void releasePlayer() {
+    /*private void releasePlayer() {
         if (simpleExoPlayer != null) {
 //            updateResumePosition();
             simpleExoPlayer.stop();
@@ -267,16 +269,41 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
 //            trackSelectionHelper = null;
 //            eventLogger = null;
         }
+    }*/
+
+    private void releasePlayer() {
+        if (simpleExoPlayer != null) {
+            playbackPosition = simpleExoPlayer.getCurrentPosition();
+            currentWindow = simpleExoPlayer.getCurrentWindowIndex();
+            playWhenReady = simpleExoPlayer.getPlayWhenReady();
+            simpleExoPlayer.stop();
+            simpleExoPlayer.release();
+        }
+        simpleExoPlayer = null;
+    }
+
+    private void errorDialog(String message) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(ChannelsActivity.this);
+        adb.setTitle("Couldn't able to stream channel");
+        adb.setMessage(message);
+        adb.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+//                finish(); // take out user from this activity.
+            }
+        });
+        AlertDialog ad = adb.create();
+        ad.show();
     }
 
     @Override
     public void OnChannelClick(String channelId, String streamType, String extension) {
-        Toast.makeText(this, "Channel Id: "+ channelId+ "type: "+ streamType, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Channel Id: "+ channelId+ "type: "+ streamType, Toast.LENGTH_SHORT).show();
         if (userName != null && password != null) {
             String url = server+"/"+streamType+"/"+userName+"/"+password+"/"+channelId+extension;
             Log.d(TAG, "OnChannelClick: url: "+ url);
             playVideo(url);
         }
-
     }
 }

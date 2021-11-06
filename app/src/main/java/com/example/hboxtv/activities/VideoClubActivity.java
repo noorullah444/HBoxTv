@@ -1,5 +1,7 @@
 package com.example.hboxtv.activities;
 
+import static com.example.hboxtv.activities.HomeActivity.videoClubList;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -80,8 +82,8 @@ public class VideoClubActivity extends AppCompatActivity implements CategoryAdap
         executor.execute(() -> {
             //Background work here
             if (UID != null && GUID != null) {
-                if (HomeActivity.videoClubList != null && HomeActivity.videoClubList.size() != 0) {
-                    categoryByDeviceResponse.setResponse(HomeActivity.videoClubList);
+                if (videoClubList != null && videoClubList.size() != 0) {
+                    categoryByDeviceResponse.setResponse(videoClubList);
                     populateRecyclerView(categoryByDeviceResponse);
                 } else
                     getCategoriesByVolley(UID, GUID);
@@ -119,8 +121,10 @@ public class VideoClubActivity extends AppCompatActivity implements CategoryAdap
                                 Category category = new Category(heroObject.getString("category_id"), heroObject.getString("category_name"));
 
                                 //adding the list
-                                HomeActivity.videoClubList.add(category);
-                                categoryByDeviceResponse.setResponse(HomeActivity.videoClubList);
+                                if (videoClubList != null) {
+                                    videoClubList.add(category);
+                                    categoryByDeviceResponse.setResponse(videoClubList);
+                                }
                             }
                             populateRecyclerView(categoryByDeviceResponse);
 

@@ -54,7 +54,7 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in);
 //        getSignUpResponse();
 //        checkPhoneStatePermission();
-        getUid();
+        UID = getUid();
         deviceName = getDeviceName();
         Log.d(TAG, "onCreate: deviceName: "+ deviceName);
         initViews();
@@ -179,7 +179,7 @@ public class SignInActivity extends AppCompatActivity {
                         Log.d(TAG, "onResponse: uid: "+ UID);
                         Log.d(TAG, "onResponse: guid: "+ GUID);
                         progressBar.setVisibility(View.GONE);
-                        showSignInDialog(response.body().getMessage());
+                        showSignInDialog(response.body().getCode(), response.body().getMessage());
                     }
                 } else {
                     Log.d(TAG, "onResponse: response failed!");
@@ -196,7 +196,7 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-    private void showSignInDialog(String message) {
+    private void showSignInDialog(String code, String message) {
         new AlertDialog.Builder(SignInActivity.this).setTitle("Login Successful")
                 .setMessage(message)
                 .setCancelable(false)
@@ -210,9 +210,17 @@ public class SignInActivity extends AppCompatActivity {
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(SignInActivity.this, HomeActivity.class);
-                        startActivity(intent);
-                        finish();
+                        Intent intent;
+                        if (code.equals("120")) {
+                            // account is expired
+                            // goto package subscription activity
+                            intent = new Intent(SignInActivity.this, SubscriptionActivity.class);
+                            startActivity(intent);
+                        } else {
+                            intent = new Intent(SignInActivity.this, HomeActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
                         dialog.dismiss();
                     }
                 })
@@ -229,18 +237,44 @@ public class SignInActivity extends AppCompatActivity {
         return Build.MODEL;
     }
 
-    private void getUid() {
+    private String getUid() {
+        String id = "";
         try {
             /*TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager != null)
-                UID = telephonyManager.getDeviceId();*/
+                UID = telephonyManager.getDeviceId();
 //            UID = UUID.randomUUID().toString();
-            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+//            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
 //            UID = Build.ID;
-            Log.d(TAG, "getUid: " + UID);
+
+//            Log.d(TAG, "getUid: model: "+ Build.MODEL);
+//            Log.d(TAG, "getUid: MANUFACTURER: "+ Build.MANUFACTURER);
+//            Log.d(TAG, "getUid: DEVICE: "+ Build.DEVICE);
+//            Log.d(TAG, "getUid: ID: "+ Build.ID);
+//            Log.d(TAG, "getUid: PRODUCT: "+ Build.PRODUCT);
+//            Log.d(TAG, "getUid: SERIAL: "+ Build.SERIAL);
+//            Log.d(TAG, "getUid: BRAND: "+ Build.BRAND);
+//            Log.d(TAG, "getUid: " + UID);*/
+            id = String.valueOf(Build.BOARD.length() % 10
+                    + Build.BRAND.length() % 10
+                    + Build.DEVICE.length() % 10
+                    + Build.DISPLAY.length() % 10
+                    + Build.HOST.length() % 10
+                    + Build.ID.length() % 10
+                    + Build.MANUFACTURER.length() % 10
+                    + Build.MODEL.length() % 10
+                    + Build.PRODUCT.length() % 10
+                    + Build.TAGS.length() % 10
+                    + Build.USER.length() % 10);
+
+            Log.d("SplashActivity", "onCreate: s:: "+ id);
+
         } catch (Exception e) {
             e.getStackTrace();
         }
+
+        return id;
     }
 
     /*private void checkPhoneStatePermission() {

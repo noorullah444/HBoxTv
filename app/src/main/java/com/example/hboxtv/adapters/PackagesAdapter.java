@@ -9,14 +9,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hboxtv.R;
-import com.example.hboxtv.model.Category;
-import com.example.hboxtv.model.CategoryByDeviceResponse;
 import com.example.hboxtv.model.Package;
 
 import org.jetbrains.annotations.NotNull;
@@ -85,16 +82,15 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
                         selectedPackagesList.add(mPackage);
                         editor.putStringSet("key", set);
                         editor.apply();
-                        save_pos_check(position, true);
-                        clickListener.OnPackageSelect(selectedPackagesList);
+                        savePosCheck(position, true);
                     }
                     else {
                         selectedPackagesList.remove(mPackage);
                         editor.putStringSet("key", set);
                         editor.apply();
-                        save_pos_check(position, false);
-                        clickListener.OnPackageSelect(selectedPackagesList);
+                        savePosCheck(position, false);
                     }
+                    clickListener.OnPackageSelect(selectedPackagesList);
                 }
             });
         }
@@ -120,7 +116,7 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
         void OnPackageSelect(List<Package> list);
     }
 
-    private void save_pos_check(int position, boolean state) {
+    private void savePosCheck(int position, boolean state) {
         checkedStatus[position] = state;
         String key = Integer.toString(position);
 

@@ -60,7 +60,7 @@ public class SignUpActivity extends AppCompatActivity {
 //        checkPhoneStatePermission();
         ipAddress = getLocalIpAddress();
         initViews();
-        getUid();
+        UID = getUid();
 
         findViewById(R.id.button_sign_up).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -227,13 +227,14 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }*/
 
-    private void getUid() {
+    private String getUid() {
+        String id = "";
         try {
             /*TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager != null)
-                UID = telephonyManager.getDeviceId();*/
+                UID = telephonyManager.getDeviceId();
 //            UID = UUID.randomUUID().toString();
-            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+//            UID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
 //            UID = Build.ID;
 
@@ -244,10 +245,26 @@ public class SignUpActivity extends AppCompatActivity {
 //            Log.d(TAG, "getUid: PRODUCT: "+ Build.PRODUCT);
 //            Log.d(TAG, "getUid: SERIAL: "+ Build.SERIAL);
 //            Log.d(TAG, "getUid: BRAND: "+ Build.BRAND);
-            Log.d(TAG, "getUid: " + UID);
+//            Log.d(TAG, "getUid: " + UID);*/
+             id = String.valueOf(Build.BOARD.length() % 10
+                    + Build.BRAND.length() % 10
+                    + Build.DEVICE.length() % 10
+                    + Build.DISPLAY.length() % 10
+                    + Build.HOST.length() % 10
+                    + Build.ID.length() % 10
+                    + Build.MANUFACTURER.length() % 10
+                    + Build.MODEL.length() % 10
+                    + Build.PRODUCT.length() % 10
+                    + Build.TAGS.length() % 10
+                    + Build.USER.length() % 10);
+
+            Log.d("SplashActivity", "onCreate: s:: "+ id);
+
         } catch (Exception e) {
             e.getStackTrace();
         }
+
+        return id;
     }
 
     public static String getLocalIpAddress() {
