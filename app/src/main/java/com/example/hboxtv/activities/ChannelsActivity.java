@@ -24,6 +24,7 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.ChannelAdapter;
 import com.example.hboxtv.model.Channel;
@@ -43,6 +44,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import hb.xvideoplayer.MxVideoPlayer;
+import hb.xvideoplayer.MxVideoPlayerWidget;
 
 public class ChannelsActivity extends AppCompatActivity implements ChannelAdapter.OnChannelClickListener {
     private static final String TAG = ChannelsActivity.class.getSimpleName();
@@ -202,7 +206,7 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
             }
         });
 
-        findViewById(R.id.ic_full_screen).setOnClickListener(new View.OnClickListener() {
+        /*findViewById(R.id.ic_full_screen).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
@@ -220,10 +224,10 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
                     extraLayout.setVisibility(View.VISIBLE);
                 }
             }
-        });
+        });*/
     }
 
-    private void playVideo(String videoURL) {
+    /*private void playVideo(String videoURL) {
         try {
             simpleExoPlayer = new SimpleExoPlayer.Builder(this).build();
             playerView.setPlayer(simpleExoPlayer);
@@ -247,6 +251,11 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
             }
         });
 
+    }*/
+
+    private void playVideo(String channelName, String videoURL) {
+        MxVideoPlayerWidget videoPlayerWidget = findViewById(R.id.mpw_video_player);
+        videoPlayerWidget.autoStartPlay(videoURL, MxVideoPlayer.SCREEN_LAYOUT_NORMAL, channelName);
     }
 
     private void initViews() {
@@ -255,8 +264,17 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
 
     @Override
     public void onBackPressed() {
+        if (MxVideoPlayer.backPress()) {
+            return;
+        }
         super.onBackPressed();
-        releasePlayer();
+//        releasePlayer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MxVideoPlayer.releaseAllVideos();
     }
 
     /*private void releasePlayer() {
@@ -271,7 +289,7 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
         }
     }*/
 
-    private void releasePlayer() {
+    /*private void releasePlayer() {
         if (simpleExoPlayer != null) {
             playbackPosition = simpleExoPlayer.getCurrentPosition();
             currentWindow = simpleExoPlayer.getCurrentWindowIndex();
@@ -280,7 +298,7 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
             simpleExoPlayer.release();
         }
         simpleExoPlayer = null;
-    }
+    }*/
 
     private void errorDialog(String message) {
         AlertDialog.Builder adb = new AlertDialog.Builder(ChannelsActivity.this);
@@ -298,12 +316,18 @@ public class ChannelsActivity extends AppCompatActivity implements ChannelAdapte
     }
 
     @Override
-    public void OnChannelClick(String channelId, String streamType, String extension) {
+    public void OnChannelClick(String channelName, String channelId, String streamType, String extension) {
 //        Toast.makeText(this, "Channel Id: "+ channelId+ "type: "+ streamType, Toast.LENGTH_SHORT).show();
+        if (MyApplication.isNetworkNotAvailable(ChannelsActivity.this)) {
+            MyApplication.networkDialog(ChannelsActivity.this,
+                    "No internet available. Please connect to the internet first.");
+            return;
+        }
+
         if (userName != null && password != null) {
             String url = server+"/"+streamType+"/"+userName+"/"+password+"/"+channelId+extension;
             Log.d(TAG, "OnChannelClick: url: "+ url);
-            playVideo(url);
+            playVideo(channelName, url);
         }
     }
 }

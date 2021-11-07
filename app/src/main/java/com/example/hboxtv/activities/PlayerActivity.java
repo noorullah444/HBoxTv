@@ -47,7 +47,6 @@ public class PlayerActivity extends AppCompatActivity {
         if (intent != null) {
             STREAM_URL = intent.getStringExtra("stream_url");
             initializePlayer();
-
         }
     }
 

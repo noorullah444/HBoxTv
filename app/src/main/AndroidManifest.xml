@@ -12,12 +12,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HBoxTv"
+        android:name=".MyApplication"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".activities.MxPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true" />
         <activity
             android:name=".activities.SeriesDetailsActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".activities.MovieDetailsActivity"
-            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".activities.MovieDetailsActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".activities.PackageSelectionActivity"
             android:screenOrientation="landscape" />

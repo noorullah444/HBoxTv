@@ -26,6 +26,7 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.CategoryAdapter;
 import com.example.hboxtv.api.ApiClient;
@@ -106,9 +107,9 @@ public class VideoClubActivity extends AppCompatActivity implements CategoryAdap
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    Log.d(TAG, "onResponse: " + response.toString());
-
                     if (response != null) {
+                        Log.d(TAG, "onResponse: " + response.toString());
+
                         try {
                             //getting the whole json object from the response
                             JSONArray heroArray = response.getJSONArray("response");
@@ -242,6 +243,12 @@ public class VideoClubActivity extends AppCompatActivity implements CategoryAdap
 
     @Override
     public void OnCategoryClick(String categoryId) {
+        if (MyApplication.isNetworkNotAvailable(VideoClubActivity.this)) {
+            MyApplication.networkDialog(VideoClubActivity.this,
+                    "No internet available. Please connect to the internet first.");
+            return;
+        }
+
         Intent intent = new Intent(VideoClubActivity.this, MoviesActivity.class);
         intent.putExtra("category_id", categoryId);
         startActivity(intent);

@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.model.Category;
 
@@ -35,12 +35,10 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         initLists();
         // to make status bar transparent
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
-            // for full screen activity
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        //            getWindow().setStatusBarColor(getResources().getColor(R.color.transparent));
+        // for full screen activity
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setDateAndTime();
         setExpiryDate();
@@ -106,6 +104,12 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(HomeActivity.this)) {
+                    MyApplication.networkDialog(HomeActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
                 startActivity(new Intent(HomeActivity.this, LiveTvActivity.class));
             }
         });
@@ -114,6 +118,12 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(HomeActivity.this)) {
+                    MyApplication.networkDialog(HomeActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
                 startActivity(new Intent(HomeActivity.this, VideoClubActivity.class));
             }
         });
@@ -122,6 +132,12 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(HomeActivity.this)) {
+                    MyApplication.networkDialog(HomeActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
                 startActivity(new Intent(HomeActivity.this, TvShowsActivity.class));
             }
         });
@@ -130,6 +146,12 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(HomeActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(HomeActivity.this)) {
+                    MyApplication.networkDialog(HomeActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
                 startActivity(new Intent(HomeActivity.this, ReplayActivity.class));
             }
         });

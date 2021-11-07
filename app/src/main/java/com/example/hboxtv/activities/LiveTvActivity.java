@@ -22,6 +22,7 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.CategoryAdapter;
 import com.example.hboxtv.api.ApiClient;
@@ -233,6 +234,12 @@ public class LiveTvActivity extends AppCompatActivity implements CategoryAdapter
 
     @Override
     public void OnCategoryClick(String categoryId) {
+        if (MyApplication.isNetworkNotAvailable(LiveTvActivity.this)) {
+            MyApplication.networkDialog(LiveTvActivity.this,
+                    "No internet available. Please connect to the internet first.");
+            return;
+        }
+
         Intent intent = new Intent(LiveTvActivity.this, ChannelsActivity.class);
         intent.putExtra("category_id", categoryId);
         startActivity(intent);

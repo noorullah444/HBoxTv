@@ -117,8 +117,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(MovieDetailsActivity.this, R.anim.button_click));
                 if (STREAM_URL != null) {
-                    Intent gotoPlayer = new Intent(MovieDetailsActivity.this, PlayerActivity.class);
+                    Intent gotoPlayer = new Intent(MovieDetailsActivity.this, MxPlayerActivity.class);
                     gotoPlayer.putExtra("stream_url", STREAM_URL);
+                    gotoPlayer.putExtra("movie_name", movieName);
                     startActivity(gotoPlayer);
                 }
             }

@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
@@ -64,6 +65,12 @@ public class SignInActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // add animation
                 view.startAnimation(AnimationUtils.loadAnimation(SignInActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(SignInActivity.this)) {
+                    MyApplication.networkDialog(SignInActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
 
                 if (confirmInput()){
                     email = textInputEmail.getText().toString();

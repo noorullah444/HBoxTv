@@ -7,9 +7,12 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
@@ -66,6 +70,12 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 v.startAnimation(AnimationUtils.loadAnimation(SignUpActivity.this, R.anim.button_click));
+
+                if (MyApplication.isNetworkNotAvailable(SignUpActivity.this)) {
+                    MyApplication.networkDialog(SignUpActivity.this,
+                            "No internet available. Please connect to the internet first.");
+                    return;
+                }
 
                 if (confirmInput()) {
                     email = textInputEmail.getText().toString();

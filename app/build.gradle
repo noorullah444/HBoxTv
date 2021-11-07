@@ -33,8 +33,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    dataBinding {
-        enabled true
+    defaultConfig {
+        ndk {
+            // config you want to support device
+            abiFilters 'arm64-v8a', 'armeabi', 'armeabi-v7a', 'x86'
+        }
     }
 }
 
@@ -70,4 +73,7 @@ dependencies {
 
     // exoplayer dependency
     implementation 'com.google.android.exoplayer:exoplayer:2.15.1'
+
+    // mxPlayer dependency
+    implementation 'com.henryblue.mxvideoplayer:xvideoplayer:1.2.1'
 }
