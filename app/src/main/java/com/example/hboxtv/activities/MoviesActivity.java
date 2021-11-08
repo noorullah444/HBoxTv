@@ -1,9 +1,5 @@
 package com.example.hboxtv.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -15,7 +11,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,12 +24,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.MoviesAdapter;
-import com.example.hboxtv.adapters.SeriesAdapter;
 import com.example.hboxtv.model.Channel;
-import com.example.hboxtv.model.Series;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 
 import org.json.JSONArray;
 import org.json.JSONException;

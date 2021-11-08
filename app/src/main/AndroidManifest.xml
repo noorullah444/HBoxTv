@@ -28,9 +28,6 @@
             android:name=".activities.PackageSelectionActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".activities.PlayerActivity"
-            android:screenOrientation="landscape" />
-        <activity
             android:name=".activities.MoviesActivity"
             android:screenOrientation="landscape" />
         <activity

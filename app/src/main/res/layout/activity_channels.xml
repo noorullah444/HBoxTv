@@ -110,7 +110,7 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!--<RelativeLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1.5"
@@ -130,18 +130,18 @@
                     android:layout_alignParentTop="true"
                     android:src="@drawable/ic_full_screen"/>
 
-            </RelativeLayout>-->
+            </RelativeLayout>
 
-            <hb.xvideoplayer.MxVideoPlayerWidget
+            <!--<hb.xvideoplayer.MxVideoPlayerWidget
                 android:id="@+id/mpw_video_player"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:showBottomProgress="false"/>
+                app:showBottomProgress="false"/>-->
 
             <LinearLayout
                 android:id="@+id/extra_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/item_bg"
                 android:layout_weight="1"
