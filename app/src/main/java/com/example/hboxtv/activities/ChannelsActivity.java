@@ -31,12 +31,9 @@ import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.ChannelAdapter;
 import com.example.hboxtv.model.Channel;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -61,8 +58,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import hb.xvideoplayer.MxVideoPlayer;
-
 public class ChannelsActivity extends AppCompatActivity implements MediaSourceEventListener, BandwidthMeter.EventListener, ChannelAdapter.OnChannelClickListener {
     private static final String TAG = ChannelsActivity.class.getSimpleName();
     private PlayerView playerView;
@@ -78,6 +73,10 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     private boolean playWhenReady = true;
     private int currentWindow = 0;
     private long playbackPosition = 0L;
+    String streamUrl;
+    boolean isFullScreen = false;
+
+    LinearLayout channelsLayout, headerLayout, extraLayout;
 
     MediaSourceEventListener eventListener;
     BandwidthMeter.EventListener bandwidthMeterEventListener;
@@ -128,6 +127,12 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
 
         eventListener = this;
         bandwidthMeterEventListener = this;
+    }
+
+    private void initViews() {
+        channelsLayout = findViewById(R.id.channels_layout);
+        headerLayout = findViewById(R.id.header_layout);
+        extraLayout = findViewById(R.id.extra_layout);
     }
 
     private void getChannelList(String categoryId) {
@@ -231,18 +236,17 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
-                LinearLayout channelsLayout = findViewById(R.id.channels_layout);
-                LinearLayout headerLayout = findViewById(R.id.header_layout);
-                LinearLayout extraLayout = findViewById(R.id.extra_layout);
 
                 if (channelsLayout.getVisibility() == View.VISIBLE && headerLayout.getVisibility() == View.VISIBLE) {
                     channelsLayout.setVisibility(View.GONE);
                     headerLayout.setVisibility(View.GONE);
                     extraLayout.setVisibility(View.GONE);
+                    isFullScreen = true;
                 } else {
                     channelsLayout.setVisibility(View.VISIBLE);
                     headerLayout.setVisibility(View.VISIBLE);
                     extraLayout.setVisibility(View.VISIBLE);
+                    isFullScreen = false;
                 }
             }
         });
@@ -274,7 +278,7 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
 
     }*/
 
-    private void initializePlayer(String m3u8URL) {
+    private void initializePlayer() {
         // 1. Create a default TrackSelector
         Handler mainHandler = new Handler();
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter.Builder()
@@ -284,68 +288,85 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         LoadControl loadControl = new DefaultLoadControl();
-        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
+        simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
         playerView = findViewById(R.id.video_view);
-        playerView.hideController();
-        playerView.setPlayer(player);
+        playerView.setPlayer(simpleExoPlayer);
 
         // Produces DataSource instances through which media data is loaded.
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "example-hls-app"), bandwidthMeter);
 
         // This is the MediaSource representing the media to be played.
-        HlsMediaSource videoSource = new HlsMediaSource(Uri.parse(m3u8URL), dataSourceFactory, 5, mainHandler, eventListener);
+        HlsMediaSource videoSource = null;
+        if (streamUrl != null) {
+            videoSource = new HlsMediaSource(Uri.parse(streamUrl), dataSourceFactory, 5, mainHandler, eventListener);
+        }
 
         // Prepare the player with the source.
-        player.prepare(videoSource);
-    }
-
-    /*private void playVideo(String channelName, String videoURL) {
-        MxVideoPlayerWidget videoPlayerWidget = findViewById(R.id.mpw_video_player);
-        videoPlayerWidget.autoStartPlay(videoURL, MxVideoPlayer.SCREEN_LAYOUT_NORMAL, channelName);
-    }*/
-
-    private void initViews() {
+        simpleExoPlayer.prepare(videoSource);
+        simpleExoPlayer.setPlayWhenReady(playWhenReady);
     }
 
     @Override
-    public void onBackPressed() {
-        /*if (MxVideoPlayer.backPress()) {
-            return;
-        }*/
-        super.onBackPressed();
-        releasePlayer();
+    protected void onStart() {
+        super.onStart();
+        if (Util.SDK_INT >= 24) {
+            initializePlayer();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if ((Util.SDK_INT < 24 || simpleExoPlayer == null)) {
+            initializePlayer();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "44onPause: called!");
 //        MxVideoPlayer.releaseAllVideos();
-        releasePlayer();
+        if (Util.SDK_INT < 24) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "44onStop: called!");
+        if (Util.SDK_INT >= 24) {
+            releasePlayer();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "44onDestroy: called!");
         releasePlayer();
     }
 
-    /*private void releasePlayer() {
-        if (simpleExoPlayer != null) {
-//            updateResumePosition();
-            simpleExoPlayer.stop();
-            simpleExoPlayer.release();
-            simpleExoPlayer = null;
-//            trackSelector = null;
-//            trackSelectionHelper = null;
-//            eventLogger = null;
+    @Override
+    public void onBackPressed() {
+        if (isFullScreen) {
+            channelsLayout.setVisibility(View.VISIBLE);
+            headerLayout.setVisibility(View.VISIBLE);
+            extraLayout.setVisibility(View.VISIBLE);
+            isFullScreen = false;
+        } else {
+            releasePlayer();
+            super.onBackPressed();
         }
-    }*/
+    }
 
     private void releasePlayer() {
         if (simpleExoPlayer != null) {
+            Log.d(TAG, "releasePlayer: released!");
 //            playbackPosition = simpleExoPlayer.getCurrentPosition();
 //            currentWindow = simpleExoPlayer.getCurrentWindowIndex();
-//            playWhenReady = simpleExoPlayer.getPlayWhenReady();
+            playWhenReady = simpleExoPlayer.getPlayWhenReady();
             simpleExoPlayer.stop();
             simpleExoPlayer.release();
         }
@@ -377,12 +398,11 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         }
 
         releasePlayer();
+
         if (userName != null && password != null) {
-            String url = server+"/"+streamType+"/"+userName+"/"+password+"/"+channelId+".m3u8"/*extension*/;
-            Log.d(TAG, "OnChannelClick: url: "+ url);
-//            playVideo(url);
-//            playVideo(channelName, url);
-            initializePlayer(url);
+            streamUrl = server + "/" + streamType + "/" + userName + "/" + password + "/" + channelId + ".m3u8"/*extension*/;
+            Log.d(TAG, "OnChannelClick: url: " + streamUrl);
+            initializePlayer();
         }
     }
 

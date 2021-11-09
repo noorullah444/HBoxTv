@@ -25,7 +25,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ViewHold
     private final List<Channel> channelList;
     private final Context context;
     private OnChannelClickListener clickListener;
-    private int row_index=0;
+    private int row_index = -1;
 
     public ChannelAdapter(Context context, List<Channel> channels/*, OnCategoryClickListener listener*/) {
         this.context = context;
