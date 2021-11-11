@@ -1,5 +1,6 @@
 package com.example.hboxtv.activities;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,7 +13,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -31,9 +35,9 @@ import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.ChannelAdapter;
 import com.example.hboxtv.model.Channel;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -61,14 +65,14 @@ import java.util.concurrent.Executors;
 public class ChannelsActivity extends AppCompatActivity implements MediaSourceEventListener, BandwidthMeter.EventListener, ChannelAdapter.OnChannelClickListener {
     private static final String TAG = ChannelsActivity.class.getSimpleName();
     private PlayerView playerView;
-    private ExoPlayer simpleExoPlayer;
+    private SimpleExoPlayer exoPlayer;
     private String UID;
     private String GUID;
     private String categoryId;
     private String server;
     private String userName;
     private String password;
-    List<Channel> channelList = new ArrayList<>();
+    private List<Channel> channelList = new ArrayList<>();
 
     private boolean playWhenReady = true;
     private int currentWindow = 0;
@@ -76,15 +80,13 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     String streamUrl;
     boolean isFullScreen = false;
 
-    LinearLayout channelsLayout, headerLayout, extraLayout;
+    private LinearLayout headerLayout, extraLayout, mainLayout;
+    private RelativeLayout channelsLayout;
+    private ImageView btnMuteUnMute;
+    private ProgressBar progressBar;
 
-    MediaSourceEventListener eventListener;
-    BandwidthMeter.EventListener bandwidthMeterEventListener;
-
-    // url of video which we are loading.
-    String videoURL = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-//    String videoURL = "http://canalvip.ddns.net:25443/live/noormobipixelsgmailcom270763/NY4T45RN62/9152";
-
+    private MediaSourceEventListener eventListener;
+    private BandwidthMeter.EventListener bandwidthMeterEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,11 +135,15 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         channelsLayout = findViewById(R.id.channels_layout);
         headerLayout = findViewById(R.id.header_layout);
         extraLayout = findViewById(R.id.extra_layout);
+        mainLayout = findViewById(R.id.main_layout);
+        btnMuteUnMute = findViewById(R.id.mute_unMute);
+        progressBar = findViewById(R.id.progress_bar);
     }
 
     private void getChannelList(String categoryId) {
         final String JSON_URL = "http://54.36.204.161/iptvapi/objects/channelsbycategory.php";
         try {
+            progressBar.setVisibility(View.VISIBLE);
             JSONObject jsonBody = new JSONObject();
 
             jsonBody.put("deviceuid", UID);
@@ -148,6 +154,7 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
                 @Override
                 public void onResponse(JSONObject response) {
                     if (response != null) {
+                        progressBar.setVisibility(View.GONE);
                         Log.d(TAG, "123onResponse: " + response.toString());
                         try {
                             //getting the whole json object from the response
@@ -180,6 +187,7 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
             }, new com.android.volley.Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    progressBar.setVisibility(View.GONE);
                     Log.d(TAG, "onErrorResponse: " + error.toString());
 //                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
                 }
@@ -221,6 +229,16 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         ChannelAdapter adapter = new ChannelAdapter(this, channelList);
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
+
+        // play fist channel on start
+        if (channelList != null && channelList.size() > 0) {
+            Channel firstChannel = channelList.get(0);
+
+            if (userName != null && password != null) {
+                streamUrl = server + "/" + firstChannel.getStreamType() + "/" + userName + "/" + password + "/" + firstChannel.getChannelId() + ".m3u8";
+                initializePlayer();
+            }
+        }
     }
 
     private void setClickListeners() {
@@ -233,21 +251,32 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         });
 
         findViewById(R.id.ic_full_screen).setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
-
+//                PlayerView.switchTargetView(exoPlayer,playerView, playerViewFull);
                 if (channelsLayout.getVisibility() == View.VISIBLE && headerLayout.getVisibility() == View.VISIBLE) {
                     channelsLayout.setVisibility(View.GONE);
                     headerLayout.setVisibility(View.GONE);
                     extraLayout.setVisibility(View.GONE);
+                    mainLayout.setBackground(getResources().getDrawable(R.drawable.black_screen));
                     isFullScreen = true;
                 } else {
                     channelsLayout.setVisibility(View.VISIBLE);
                     headerLayout.setVisibility(View.VISIBLE);
                     extraLayout.setVisibility(View.VISIBLE);
+                    mainLayout.setBackground(getResources().getDrawable(R.drawable.home_bg));
                     isFullScreen = false;
                 }
+            }
+        });
+
+        btnMuteUnMute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(AnimationUtils.loadAnimation(ChannelsActivity.this, R.anim.button_click));
+                muteUnMute();
             }
         });
     }
@@ -288,9 +317,9 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         LoadControl loadControl = new DefaultLoadControl();
-        simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
+        exoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
         playerView = findViewById(R.id.video_view);
-        playerView.setPlayer(simpleExoPlayer);
+        playerView.setPlayer(exoPlayer);
 
         // Produces DataSource instances through which media data is loaded.
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "example-hls-app"), bandwidthMeter);
@@ -302,8 +331,35 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         }
 
         // Prepare the player with the source.
-        simpleExoPlayer.prepare(videoSource);
-        simpleExoPlayer.setPlayWhenReady(playWhenReady);
+        exoPlayer.prepare(videoSource);
+        exoPlayer.setPlayWhenReady(playWhenReady);
+        setMuteUnMute();
+    }
+
+    private void muteUnMute() {
+        if (exoPlayer != null) {
+            float currentVolume = exoPlayer.getVolume();
+            if (currentVolume == 0f) {
+                exoPlayer.setVolume(1f);
+                btnMuteUnMute.setImageDrawable(getDrawable(R.drawable.ic_mic));
+            } else {
+                exoPlayer.setVolume(0f);
+                btnMuteUnMute.setImageDrawable(getDrawable(R.drawable.ic_mic_off));
+            }
+        }
+
+    }
+
+    private void setMuteUnMute() {
+        if (exoPlayer != null) {
+            float currentVolume = exoPlayer.getVolume();
+            if (currentVolume == 0f) {
+                btnMuteUnMute.setImageDrawable(getDrawable(R.drawable.ic_mic_off));
+            } else {
+                btnMuteUnMute.setImageDrawable(getDrawable(R.drawable.ic_mic));
+            }
+        }
+
     }
 
     @Override
@@ -317,7 +373,7 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     @Override
     protected void onResume() {
         super.onResume();
-        if ((Util.SDK_INT < 24 || simpleExoPlayer == null)) {
+        if ((Util.SDK_INT < 24 || exoPlayer == null)) {
             initializePlayer();
         }
     }
@@ -355,6 +411,7 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
             headerLayout.setVisibility(View.VISIBLE);
             extraLayout.setVisibility(View.VISIBLE);
             isFullScreen = false;
+            mainLayout.setBackground(getResources().getDrawable(R.drawable.home_bg));
         } else {
             releasePlayer();
             super.onBackPressed();
@@ -362,15 +419,15 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     }
 
     private void releasePlayer() {
-        if (simpleExoPlayer != null) {
+        if (exoPlayer != null) {
             Log.d(TAG, "releasePlayer: released!");
 //            playbackPosition = simpleExoPlayer.getCurrentPosition();
 //            currentWindow = simpleExoPlayer.getCurrentWindowIndex();
-            playWhenReady = simpleExoPlayer.getPlayWhenReady();
-            simpleExoPlayer.stop();
-            simpleExoPlayer.release();
+            playWhenReady = exoPlayer.getPlayWhenReady();
+            exoPlayer.stop();
+            exoPlayer.release();
         }
-        simpleExoPlayer = null;
+        exoPlayer = null;
     }
 
     private void errorDialog(String message) {

@@ -3,41 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/home_bg"
+    android:background="@drawable/black_screen"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
-
-    <LinearLayout
-        android:visibility="gone"
-        android:id="@+id/header_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/btn_back_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:padding="12dp"
-            android:src="@drawable/ic_arrow_back"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/tv_movie_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins_medium"
-            android:gravity="center"
-            android:padding="12dp"
-            android:text="Movie Name"
-            android:textColor="@color/white"
-            android:textSize="22sp" />
-    </LinearLayout>
 
     <hb.xvideoplayer.MxVideoPlayerWidget
         android:id="@+id/mpw_video_player"

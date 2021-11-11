@@ -2,6 +2,7 @@ package com.example.hboxtv.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,19 +21,23 @@ import com.android.volley.RequestQueue;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
+import com.example.hboxtv.model.Channel;
 import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
 import com.example.hboxtv.model.SubscribeModel;
 import com.google.gson.Gson;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,6 +51,7 @@ public class SubscriptionActivity extends AppCompatActivity {
     private String GUID;
     private ProgressBar progressBar;
     private ApiInterface apiInterface;
+    private TextView tvExpiry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +69,12 @@ public class SubscriptionActivity extends AppCompatActivity {
 
         initViews();
         setClickListeners();
+        checkSubscription();
     }
 
     private void initViews() {
         progressBar = findViewById(R.id.progress_bar);
+        tvExpiry = findViewById(R.id.tv_expiry_date);
     }
 
     private void setClickListeners() {
@@ -86,7 +94,7 @@ public class SubscriptionActivity extends AppCompatActivity {
                 Handler handler = new Handler();
                 executor.execute(() -> {
                     // background work here
-                    subscribePackage2("5", "1 month package");
+                    subscribePackage("5", "1 month package");
                     handler.post(() -> {
                         // ui work here
                     });
@@ -99,7 +107,15 @@ public class SubscriptionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(SubscriptionActivity.this, R.anim.button_click));
-                Toast.makeText(SubscriptionActivity.this, "clicked", Toast.LENGTH_SHORT).show();
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler();
+                executor.execute(() -> {
+                    // background work here
+                    subscribePackage("10", "2 month package");
+                    handler.post(() -> {
+                        // ui work here
+                    });
+                });
             }
         });
 
@@ -107,7 +123,15 @@ public class SubscriptionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(SubscriptionActivity.this, R.anim.button_click));
-                Toast.makeText(SubscriptionActivity.this, "clicked", Toast.LENGTH_SHORT).show();
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler();
+                executor.execute(() -> {
+                    // background work here
+                    subscribePackage("20", "4 month package");
+                    handler.post(() -> {
+                        // ui work here
+                    });
+                });
             }
         });
 
@@ -115,34 +139,81 @@ public class SubscriptionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 view.startAnimation(AnimationUtils.loadAnimation(SubscriptionActivity.this, R.anim.button_click));
-                Toast.makeText(SubscriptionActivity.this, "clicked", Toast.LENGTH_SHORT).show();
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler();
+                executor.execute(() -> {
+                    // background work here
+                    subscribePackage("60", "12 month package");
+                    handler.post(() -> {
+                        // ui work here
+                    });
+                });
             }
         });
     }
 
     private void subscribePackage(String amount, String packageName) {
+//        progressBar.setVisibility(View.VISIBLE);
         final String JSON_URL = "http://54.36.204.161/iptvapi/objects/Paypal.php";
         try {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("customerguid", GUID);
+            params.put("device_uuid", UID);
+            params.put("amount", amount);
+            params.put("item_name", packageName);
+
+            StringRequest request = new StringRequest(Request.Method.POST, JSON_URL,
+                    new com.android.volley.Response.Listener<String>() {
+                        public void onResponse(String response) {
+                            if (response != null) {
+                                Log.d(TAG, "onResponse: paypal::"+ response);
+                                Intent intent = new Intent(SubscriptionActivity.this, WebViewActivity.class);
+                                intent.putExtra("subscription_url", response);
+                                startActivity(intent);
+                            }
+                        }
+                    },
+                    new com.android.volley.Response.ErrorListener() {
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d(TAG, "onErrorResponse: "+ error.getMessage());
+                        }
+                    }
+            ) {
+                public byte[] getBody() {
+                    return new JSONObject(params).toString().getBytes();
+                }
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+            };
+
+            Volley.newRequestQueue(this).add(request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void checkSubscription() {
+        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/checksubscription.php";
+        try {
+            progressBar.setVisibility(View.VISIBLE);
             JSONObject jsonBody = new JSONObject();
 
+            jsonBody.put("deviceuid", UID);
             jsonBody.put("customerguid", GUID);
-            jsonBody.put("device_uuid", UID);
-            jsonBody.put("amount", amount);
-            jsonBody.put("item_name", packageName);
 
             JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     if (response != null) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d(TAG, "123onResponse: " + response.toString());
                         try {
-//                            JSONArray json = new JSONArray(response);
-//                            String code = response.getString("code");
-//                            String msg = response.getString("message");
-                            progressBar.setVisibility(View.GONE);
-//                            Log.d(TAG, "onResponse: code:" + code + " message: " + msg);
-                            Log.d(TAG, "onResponse: response: "+ response.toString());
-
-                        } catch (Exception e) {
+                                String message = response.getString("message");
+                                Log.d(TAG, "onResponse: expiry message: "+ message);
+                                tvExpiry.setText(message);
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -153,7 +224,7 @@ public class SubscriptionActivity extends AppCompatActivity {
                 public void onErrorResponse(VolleyError error) {
                     progressBar.setVisibility(View.GONE);
                     Log.d(TAG, "onErrorResponse: " + error.toString());
-                    Toast.makeText(SubscriptionActivity.this, "Error: " + error.toString(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -183,36 +254,5 @@ public class SubscriptionActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    private void subscribePackage2(String amount, String packageName) {
-//        progressBar.setVisibility(View.VISIBLE);
-        apiInterface = ApiClient.getInstance().getMyApi();
-        SubscribeModel model = new SubscribeModel(GUID, UID, amount, packageName);
-
-        Gson gson = new Gson();
-        String json = gson.toJson(model);
-
-        Log.d(TAG, "registerNewUser: model: "+ json);
-        Call<String> call = apiInterface.subscribe(model);
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                if (response.isSuccessful()) {
-                    if (response.body() != null) {
-                        Log.d(TAG, "onResponse: response: " + response.body());
-                    }
-                } else {
-                    Log.d(TAG, "onResponse: response failed!");
-//                    progressBar.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-                Log.d(TAG, "onFailure: " + t.getMessage());
-                Toast.makeText(SubscriptionActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }
