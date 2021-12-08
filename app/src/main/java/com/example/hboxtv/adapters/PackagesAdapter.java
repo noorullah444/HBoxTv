@@ -68,13 +68,6 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
             prefs = context.getSharedPreferences("status", Context.MODE_PRIVATE);
             editor = prefs.edit();
 
-            /*holder.tvPackageName.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    clickListener.OnPackageSelect(mPackage);
-                }
-            });*/
-
             holder.checkBoxPackage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -94,6 +87,11 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ViewHo
                 }
             });
         }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override

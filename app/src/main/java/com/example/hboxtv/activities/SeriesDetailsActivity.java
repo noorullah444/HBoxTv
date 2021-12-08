@@ -209,7 +209,7 @@ public class SeriesDetailsActivity extends AppCompatActivity {
         ratingBar.setRating(Float.parseFloat(rating));
         Glide.with(this)
                 .load(cover)
-                .placeholder(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.ic_launcher_foreground)
                 .into(ivCover);
     }
 }

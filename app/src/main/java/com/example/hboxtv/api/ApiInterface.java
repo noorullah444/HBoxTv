@@ -3,6 +3,9 @@ package com.example.hboxtv.api;
 import com.example.hboxtv.model.CategoryByDeviceModel;
 import com.example.hboxtv.model.Category;
 import com.example.hboxtv.model.CategoryByDeviceResponse;
+import com.example.hboxtv.model.Epg.EpgBody;
+import com.example.hboxtv.model.Epg.EpgModel;
+import com.example.hboxtv.model.Epg.EpgResponse;
 import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
 import com.example.hboxtv.model.SignUpModel;
@@ -18,9 +21,6 @@ import retrofit2.http.POST;
 public interface ApiInterface {
     String BASE_URL = "http://54.36.204.161/iptvapi/objects/";
 
-    /*@GET("marvel")
-    Call<List<Hero>> getHeroes();*/
-
     @POST("register.php")
     Call<SignUpResponse> registerUser(@Body SignUpModel body);
 
@@ -32,4 +32,7 @@ public interface ApiInterface {
 
     @POST("Paypal.php")
     Call<String> subscribe(@Body SubscribeModel body);
+
+    @POST("channelsbycategoryv1.php")
+    Call<EpgModel> getEpgResponse(@Body EpgBody body);
 }

@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -27,9 +25,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
-import com.example.hboxtv.adapters.ChannelAdapter;
 import com.example.hboxtv.adapters.PackagesAdapter;
-import com.example.hboxtv.model.Channel;
 import com.example.hboxtv.model.Package;
 
 import org.json.JSONArray;
@@ -93,7 +89,7 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
                 @Override
                 public void onResponse(JSONObject response) {
                     if (response != null) {
-                        Log.d(TAG, "123onResponse: " + response.toString());
+                        Log.d(TAG, "123onResponse packages: " + response.toString());
                         try {
                             //getting the whole json object from the response
                             JSONArray jsonArray = response.getJSONArray("response");
@@ -255,12 +251,16 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 4);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.hasFixedSize();
+        PackagesAdapter adapter = new PackagesAdapter(this, packagesList, checkedStatus);
+        adapter.setOnItemClickListener(this);
+        recyclerView.setAdapter(adapter);
+        progressBar.setVisibility(View.GONE);
 
         try {
             for (int index = 0; index < checkedStatus.length; index++)
                 checkedStatus[index] = sharedPreferences.getBoolean(Integer.toString(index), true);
-            PackagesAdapter adapter = new PackagesAdapter(this, packagesList, checkedStatus);
-            adapter.setOnItemClickListener(this);
+            adapter = new PackagesAdapter(this, packagesList, checkedStatus);
+            adapter.setOnItemClickListener((PackagesAdapter.OnPackageSelectListener) this);
             recyclerView.setAdapter(adapter);
             progressBar.setVisibility(View.GONE);
         } catch (Exception e) {
@@ -288,5 +288,10 @@ public class PackageSelectionActivity extends AppCompatActivity implements Packa
         selectedPackagesList.clear();
         selectedPackagesList.addAll(selectedPackages);
         Log.e(TAG, "OnPackageSelect: selected packages: " + selectedPackagesList.size());
+
+        for (Package p: selectedPackages) {
+            Log.d(TAG, "OnPackageSelect: name: "+ p.getPackageName());;
+        }
+        Log.d(TAG, "OnPackageSelect: name: -----------------------size: "+selectedPackages.size());
     }
 }

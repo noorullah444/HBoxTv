@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -33,7 +34,16 @@ import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.adapters.ChannelAdapter;
+import com.example.hboxtv.adapters.EpgAdapter;
+import com.example.hboxtv.api.ApiClient;
+import com.example.hboxtv.api.ApiInterface;
 import com.example.hboxtv.model.Channel;
+import com.example.hboxtv.model.Epg.Epg;
+import com.example.hboxtv.model.Epg.EpgBody;
+import com.example.hboxtv.model.Epg.EpgModel;
+import com.example.hboxtv.model.Epg.EpgResponse;
+import com.example.hboxtv.model.SignUpModel;
+import com.example.hboxtv.model.SignUpResponse;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -62,6 +72,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ChannelsActivity extends AppCompatActivity implements MediaSourceEventListener, BandwidthMeter.EventListener, ChannelAdapter.OnChannelClickListener {
     private static final String TAG = ChannelsActivity.class.getSimpleName();
     private PlayerView playerView;
@@ -80,13 +94,19 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     String streamUrl;
     boolean isFullScreen = false;
 
-    private LinearLayout headerLayout, extraLayout, mainLayout;
+    private LinearLayout headerLayout, mainLayout;
+    private RelativeLayout extraLayout;
     private RelativeLayout channelsLayout;
     private ImageView btnMuteUnMute;
     private ProgressBar progressBar;
+    private ProgressBar progressBarEpg;
+//    private EpgModel epgModel = new EpgModel();
 
     private MediaSourceEventListener eventListener;
     private BandwidthMeter.EventListener bandwidthMeterEventListener;
+    private List<EpgResponse> epgResponseList;
+    private ApiInterface apiInterface;
+    //    private List<EpgResponse> epgResponseList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +145,13 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
             });
         });
 
+        executor.execute(() -> {
+            if (UID != null && GUID != null) {
+//                getEpg(categoryId);
+//                getEpgByRetrofit(categoryId);
+            }
+        });
+
 //        playVideo(videoURL);
 
         eventListener = this;
@@ -134,10 +161,11 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
     private void initViews() {
         channelsLayout = findViewById(R.id.channels_layout);
         headerLayout = findViewById(R.id.header_layout);
-        extraLayout = findViewById(R.id.extra_layout);
+        extraLayout = findViewById(R.id.epg_layout);
         mainLayout = findViewById(R.id.main_layout);
         btnMuteUnMute = findViewById(R.id.mute_unMute);
         progressBar = findViewById(R.id.progress_bar);
+        progressBarEpg = findViewById(R.id.progress_bar_epg);
     }
 
     private void getChannelList(String categoryId) {
@@ -219,6 +247,146 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void getEpg(String categoryId) {
+        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/channelsbycategoryv1.php";
+        try {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressBarEpg.setVisibility(View.VISIBLE);
+                }
+            });
+            JSONObject jsonBody = new JSONObject();
+
+            jsonBody.put("deviceuid", UID);
+            jsonBody.put("customerguid", GUID);
+            jsonBody.put("categoryID", categoryId);
+
+            JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    if (response != null) {
+                        progressBarEpg.setVisibility(View.GONE);
+                        try {
+                            //getting the whole json object from the response
+                            JSONArray jsonArray = response.getJSONArray("response");
+                            List<EpgResponse> epgResponseList = new ArrayList<>();
+                            EpgResponse epgResponse = new EpgResponse();
+                            Log.d(TAG, "onResponse: json array: " + jsonArray.toString());
+
+                            //now looping through all the elements of the json array
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                //getting the json object of the particular index inside the array
+                                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                                epgResponse.setChannelid(jsonObject1.getString("channelid"));
+                                epgResponse.setName(jsonObject1.getString("name"));
+
+                                JSONArray epgArray = jsonObject1.getJSONArray("epg");
+                                List<Epg> epgList = new ArrayList<>();
+
+                                for (int j = 0; j < epgArray.length(); j++) {
+                                    Epg epg = new Epg();
+                                    epg.setTitle(epgArray.getJSONObject(j).getString("title"));
+                                    epg.setStart(epgArray.getJSONObject(j).getString("start"));
+                                    epg.setStop(epgArray.getJSONObject(j).getString("stop"));
+                                    epgList.add(epg);
+
+                                    epgResponse.setEpg(epgList);
+//                                    Log.d(TAG, "onResponse: epg channel: "+ epgResponse.getName());
+//                                    Log.d(TAG, "onResponse: epg title: "+ epg.getTitle());
+//                                    Log.d(TAG, "onResponse: epg start: "+ epg.getStart());
+//                                    Log.d(TAG, "onResponse: epg end: "+ epg.getStop());
+                                }
+                                epgResponseList.add(epgResponse);
+                                Log.d(TAG, "onResponse: epg response list name: " + epgResponseList.get(i).getEpg().size());
+                            }
+                            Log.d(TAG, "onResponse: epg response list name: " + epgResponseList.toString());
+//                            epgModel.setResponse(epgResponseList);
+//                            populateEpgRecyclerView(epgList);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+//                    Log.d(TAG, "onResponse: epg model list: " + epgModel.getResponse().size());
+
+                }
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    progressBarEpg.setVisibility(View.GONE);
+                    Log.d(TAG, "onErrorResponse: " + error.toString());
+//                    Toast.makeText(LiveTvActivity.this, "Error: "+ error.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            jsonObject.setRetryPolicy(new RetryPolicy() {
+                @Override
+                public int getCurrentTimeout() {
+                    return 50000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 50000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+
+                }
+            });
+
+            //creating a request queue
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+            //adding the string request to request queue
+            requestQueue.add(jsonObject);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    private void getEpgByRetrofit(String categoryId) {
+        progressBarEpg.setVisibility(View.VISIBLE);
+        apiInterface = ApiClient.getInstance().getMyApi();
+        EpgBody epgBody = new EpgBody(UID, GUID, categoryId);
+        Log.d(TAG, "getEpgByRetrofit: epgBody: " + epgBody);
+        Call<EpgModel> call = apiInterface.getEpgResponse(epgBody);
+        call.enqueue(new Callback<EpgModel>() {
+            @Override
+            public void onResponse(Call<EpgModel> call, Response<EpgModel> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        /*SignUpResponse signUpResponse = new SignUpResponse();
+                        signUpResponse.setCode(response.body().getCode());
+                        signUpResponse.setMessage(response.body().getMessage());*/
+                        Log.d(TAG, "onResponse: getEpgByRetrofit code: " + response.code());
+                        Log.d(TAG, "onResponse: getEpgByRetrofit message: " + response.message());
+                        progressBarEpg.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<EpgModel> call, Throwable t) {
+                progressBarEpg.setVisibility(View.GONE);
+                Log.d(TAG, "onFailure: " + t.getMessage());
+            }
+        });
+    }
+
+    private void populateEpgRecyclerView(List<Epg> epgList) {
+        Log.d(TAG, "populateEpgRecyclerView: epgList: " + epgList.size());
+        RecyclerView recyclerView = findViewById(R.id.recyclerview_epg);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 1);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.hasFixedSize();
+        EpgAdapter adapter = new EpgAdapter(this, epgList);
+        recyclerView.setAdapter(adapter);
+        progressBarEpg.setVisibility(View.GONE);
     }
 
     private void populateRecyclerView(List<Channel> channelList) {
@@ -453,6 +621,41 @@ public class ChannelsActivity extends AppCompatActivity implements MediaSourceEv
                     "No internet available. Please connect to the internet first.");
             return;
         }
+
+
+        Log.d(TAG, "onResponse: epg response list name: " + epgResponseList.size());
+
+        // loading epg for each channel
+        /*if (epgResponseList != null) {
+            Log.d(TAG, "OnChannelClick: id epgResponseList size: " + epgResponseList.size());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(0).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(1).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(2).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(3).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(4).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(5).getName());
+            Log.d(TAG, "OnChannelClick: id epgResponseList name: " + epgResponseList.get(6).getName());
+
+            *//*progressBarEpg.setVisibility(View.VISIBLE);
+            for (EpgResponse epgResponse: epgResponseList) {
+                Log.d(TAG, "OnChannelClick: idr: " + epgResponse.getName());
+
+            }*//*
+            *//*for (int i = 0; i < epgResponseList.size(); i++) {
+                Log.d(TAG, "OnChannelClick: name: " + epgResponseList.get(i).getChannelid());
+//                Log.d(TAG, "OnChannelClick: idc: " + channelId);
+            }*//*
+
+            *//*if (epgResponse.getChannelid().equals(channelId)) {
+                populateEpgRecyclerView(epgResponse.getEpg());
+            } else {
+                progressBarEpg.setVisibility(View.GONE);
+                Toast.makeText(this, "id not matched!", Toast.LENGTH_SHORT).show();
+            }*//*
+        } else {
+            progressBarEpg.setVisibility(View.GONE);
+            Toast.makeText(this, "epg not loaded!", Toast.LENGTH_SHORT).show();
+        }*/
 
         releasePlayer();
 

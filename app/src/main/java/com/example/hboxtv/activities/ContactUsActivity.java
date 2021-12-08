@@ -2,7 +2,6 @@ package com.example.hboxtv.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,32 +25,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.R;
-import com.example.hboxtv.email.JSSEProvider;
-import com.example.hboxtv.model.Channel;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.Security;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 public class ContactUsActivity extends AppCompatActivity {
     private static final String TAG = ContactUsActivity.class.getSimpleName();
@@ -108,7 +87,6 @@ public class ContactUsActivity extends AppCompatActivity {
                     Handler handler = new Handler(Looper.getMainLooper());
                     executor.execute(() -> {
                         //Background work here
-//                    sendEmail("Android Studio", "", "Test email from Android Studio");
                         sendFeedback(subject, message);
                         handler.post(() -> {
                             //UI Thread work here
@@ -180,87 +158,6 @@ public class ContactUsActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sendEmail(String body, String from, String subject) {
-        Session session;
-
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyy 'at' HH:mm:ss a z");
-            String currentDateandTime = dateFormat.format(new Date());
-
-            final String host = "smtp.ipage.com";
-            final String username = "donotreply-secureapps@mobipixels.com";
-            final String password = "Secure#1234";
-
-            Security.addProvider(new JSSEProvider());
-            Properties property1 = new Properties();
-            property1.put("mail.host", host);
-            property1.put("mail.smtp.auth", "true");
-
-            Properties props = new Properties();
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.host", host);
-            props.put("mail.smtp.socketFactory.port", "587");
-            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.port", "587");
-            //  props.put("mail.smtp.socketFactory.fallback", "false");
-            //  props.put("mail.smtp.user", username);
-            //  creates a new session, no Authenticator (will connect() later)
-            //  Session session = Session.getDefaultInstance(props, this);
-
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                Authenticator auth = new Authenticator() {
-
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                };
-                session = Session.getInstance(property1, auth);
-            } else {
-                session = Session.getDefaultInstance(props,
-                        new Authenticator() {
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(username, password);
-                            }
-                        });
-            }
-
-            // Create a default MimeMessage object.
-            Message message = new MimeMessage(session);
-
-            // Set From: header field of the header.
-            message.setFrom(new InternetAddress(username));
-
-            // Set To: header field of the header.
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse("nalbadar14@gmail.com"));
-
-            // Set Subject: header field
-            message.setSubject(subject);
-
-            // Create the message part
-            BodyPart messageBodyPart = new MimeBodyPart();
-
-            // Now set the actual message
-            messageBodyPart.setText(body);
-
-            // Create a multipart message
-            Multipart multipart = new MimeMultipart();
-            // Set text message part
-            multipart.addBodyPart(messageBodyPart);
-
-            // Send the complete message parts
-            message.setContent(multipart);
-            // Send message
-            Transport.send(message);
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-
     }
 
     private boolean validateSubject() {

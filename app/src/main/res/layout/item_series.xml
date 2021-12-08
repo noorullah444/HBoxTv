@@ -14,7 +14,7 @@
         android:layout_margin="5dp"
         android:layout_gravity="center"
         android:scaleType="fitXY"
-        android:src="@drawable/ic_launcher_background"/>
+        android:src="@drawable/ic_launcher_foreground"/>
 
     <TextView
         android:id="@+id/tv_series_name"

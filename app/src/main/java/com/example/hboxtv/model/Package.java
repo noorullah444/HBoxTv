@@ -16,7 +16,7 @@ public class Package{
     @Expose
     private String deviceID;
 
-    private Boolean isSelected;
+    public Boolean isSelected = false;
 
     public Package(String packageID, String packageName, String deviceID, Boolean isSelected) {
         this.packageID = packageID;
@@ -49,7 +49,7 @@ public class Package{
         this.deviceID = deviceID;
     }
 
-    public Boolean getSelected() {
+    public Boolean isSelected() {
         return isSelected;
     }
 

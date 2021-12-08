@@ -1,12 +1,10 @@
 package com.example.hboxtv.activities;
 
-import android.Manifest;
 import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -15,19 +13,26 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.hboxtv.MyApplication;
 import com.example.hboxtv.R;
 import com.example.hboxtv.api.ApiClient;
 import com.example.hboxtv.api.ApiInterface;
 import com.example.hboxtv.model.SignInModel;
 import com.example.hboxtv.model.SignInResponse;
-import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +47,7 @@ public class SignInActivity extends AppCompatActivity {
     private String deviceName;
     private EditText textInputEmail;
     private EditText textInputPassword;
+    private TextView tvSignUp;
     private String email;
     private String password;
     private String UID;
@@ -53,12 +59,12 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-//        getSignUpResponse();
-//        checkPhoneStatePermission();
+
         UID = getUid();
         deviceName = getDeviceName();
-        Log.d(TAG, "onCreate: deviceName: "+ deviceName);
+        Log.d(TAG, "onCreate: deviceName: " + deviceName);
         initViews();
+        checker();
 
         findViewById(R.id.button_sign_in).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,19 +78,19 @@ public class SignInActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (confirmInput()){
+                if (confirmInput()) {
                     email = textInputEmail.getText().toString();
                     password = textInputPassword.getText().toString();
 
-                    Log.d(TAG, "onClick: email: "+ email);
-                    Log.d(TAG, "onClick: password: "+ password);
+                    Log.d(TAG, "onClick: email: " + email);
+                    Log.d(TAG, "onClick: password: " + password);
 
                     loginUser(email, password, UID, deviceName);
                 }
             }
         });
 
-        findViewById(R.id.tv_sign_up).setOnClickListener(new View.OnClickListener() {
+        tvSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // add animation
@@ -153,7 +159,7 @@ public class SignInActivity extends AppCompatActivity {
         apiInterface = ApiClient.getInstance().getMyApi();
         SignInModel model = new SignInModel(email, password, uid, deviceName);
 
-        Log.d(TAG, "registerNewUser: model: "+ model);
+        Log.d(TAG, "registerNewUser: model: " + model);
         Call<SignInResponse> call = apiInterface.loginUser(model);
         call.enqueue(new Callback<SignInResponse>() {
             @Override
@@ -169,22 +175,22 @@ public class SignInActivity extends AppCompatActivity {
 
                         // saving guid to shared prefs
 //                        if (!GUID.isEmpty()) {
-                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SignInActivity.this);
-                            SharedPreferences.Editor editor = preferences.edit();
-                            editor.putString("uid", UID);
-                            editor.putString("guid", GUID);
-                            editor.putString("expiry_date", expiryDate);
-                            editor.putString("server", server);
-                            editor.putString("user_name", username);
-                            editor.putString("password", password);
-                            editor.putBoolean("isLogin", true);
-                            editor.apply();
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(SignInActivity.this);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putString("uid", UID);
+                        editor.putString("guid", GUID);
+                        editor.putString("expiry_date", expiryDate);
+                        editor.putString("server", server);
+                        editor.putString("user_name", username);
+                        editor.putString("password", password);
+                        editor.putBoolean("isLogin", true);
+                        editor.apply();
 //                        }
 
                         Log.d(TAG, "onResponse: code: " + response.body().getCode());
                         Log.d(TAG, "onResponse: message: " + response.body().getMessage());
-                        Log.d(TAG, "onResponse: uid: "+ UID);
-                        Log.d(TAG, "onResponse: guid: "+ GUID);
+                        Log.d(TAG, "onResponse: uid: " + UID);
+                        Log.d(TAG, "onResponse: guid: " + GUID);
                         progressBar.setVisibility(View.GONE);
                         showSignInDialog(response.body().getCode(), response.body().getMessage());
                     }
@@ -237,6 +243,7 @@ public class SignInActivity extends AppCompatActivity {
     private void initViews() {
         textInputEmail = findViewById(R.id.text_input_email1);
         textInputPassword = findViewById(R.id.text_input_password1);
+        tvSignUp = findViewById(R.id.tv_sign_up);
         progressBar = findViewById(R.id.progress_bar);
     }
 
@@ -275,13 +282,76 @@ public class SignInActivity extends AppCompatActivity {
                     + Build.TAGS.length() % 10
                     + Build.USER.length() % 10);
 
-            Log.d("SplashActivity", "onCreate: s:: "+ id);
+            Log.d("SplashActivity", "onCreate: s:: " + id);
 
         } catch (Exception e) {
             e.getStackTrace();
         }
 
         return id;
+    }
+
+    private void checker() {
+        final String JSON_URL = "http://54.36.204.161/iptvapi/objects/checkr.php";
+        try {
+            JSONObject jsonBody = new JSONObject();
+
+            JsonObjectRequest jsonObject = new JsonObjectRequest(Request.Method.POST, JSON_URL, jsonBody, new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    if (response != null) {
+                        try {
+                            String code = response.getString("code");
+                            String msg = response.getString("message");
+                            Log.d(TAG, "onResponse checker: code:" + code + " message: " + msg);
+
+                            if (code.equals("1"))
+                                tvSignUp.setVisibility(View.GONE);
+                            else
+                                tvSignUp.setVisibility(View.VISIBLE);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    progressBar.setVisibility(View.GONE);
+                    Log.d(TAG, "onErrorResponse: " + error.toString());
+                    Toast.makeText(SignInActivity.this, "Error: " + error.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            jsonObject.setRetryPolicy(new RetryPolicy() {
+                @Override
+                public int getCurrentTimeout() {
+                    return 50000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 50000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+
+                }
+            });
+
+            //creating a request queue
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+            //adding the string request to request queue
+            requestQueue.add(jsonObject);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /*private void checkPhoneStatePermission() {

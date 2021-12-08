@@ -222,7 +222,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         Glide.with(MovieDetailsActivity.this)
                 .load(cover)
-                .placeholder(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.ic_launcher_foreground)
                 .into(movieCover);
     }
 }

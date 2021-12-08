@@ -27,10 +27,18 @@
         <entry key="..\:/Android/ExternalProjects/HBoxTv/app/src/main/res/layout/fragment_home__page.xml" value="0.27291666666666664" />
         <entry key="..\:/Android/ExternalProjects/HBoxTv/app/src/main/res/layout/fragment_more_page.xml" value="0.27291666666666664" />
         <entry key="..\:/Android/ExternalProjects/HBoxTv/app/src/main/res/layout/fragment_seach__page.xml" value="0.27291666666666664" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/drawable/ic_play_green.xml" value="0.18854166666666666" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/drawable/item_bg.xml" value="0.35885416666666664" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/activity_channels.xml" value="0.33" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/activity_home.xml" value="0.1875" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/activity_live_tv.xml" value="0.1875" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/activity_series_details.xml" value="0.1875" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/item_channel.xml" value="0.1875" />
+        <entry key="..\:/NoorUllah/External/HBoxTv/app/src/main/res/layout/item_epg.xml" value="0.3385416666666667" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_13" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
