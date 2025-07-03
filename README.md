@@ -1,6 +1,12 @@
-HBoxTV is an Android Application developed in Java. The data in the app comes from a RESTful API using Retrofit and Volley. Basic features are:
-> Login and Registration
-> Live TV streaming
-> Watch movies, series, and seasons
-> Package subscription
-> Feedback
+# HBoxTV
+
+**HBoxTV** is an Android application developed in **Java**. The app fetches data from a **RESTful API** using **Retrofit** and **Volley**.
+
+## Features
+
+- 🔐 Login and Registration  
+- 📺 Live TV Streaming  
+- 🎬 Watch Movies, Series, and Seasons  
+- 💳 Package Subscription  
+- 📝 Feedback
+
